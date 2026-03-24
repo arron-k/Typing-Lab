@@ -1,0 +1,226 @@
+{
+  "id": 3,
+  "title": "짧은 글 연습",
+  "description": "과학 팩트 문장을 타이핑하고 맞춤법을 익혀요",
+  "starConditions": {
+    "one":   { "wpm": 70, "mistakeMax": 5 },
+    "two":   { "wpm": 100, "accuracy": 90 },
+    "three": { "wpm": 150, "quizScore": 100 }
+  },
+  "steps": [
+    {
+      "id": 301,
+      "stageId": 3,
+      "order": 1,
+      "title": "식물의 광합성",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t1-1",
+          "type": "normal",
+          "text": "식물은 햇빛을 받아 스스로 양분을 만든다.",
+          "theme": "science"
+        },
+        {
+          "id": "s3-t1-2",
+          "type": "normal",
+          "text": "잎 속 엽록체가 햇빛과 이산화탄소로 포도당을 만든다.",
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 302,
+      "stageId": 3,
+      "order": 2,
+      "title": "지구와 태양",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t2-1",
+          "type": "normal",
+          "text": "지구는 태양 주위를 일 년에 한 바퀴 돈다.",
+          "theme": "science"
+        },
+        {
+          "id": "s3-t2-2",
+          "type": "normal",
+          "text": "지구가 자전하기 때문에 낮과 밤이 생긴다.",
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 303,
+      "stageId": 3,
+      "order": 3,
+      "title": "맞춤법 퀴즈 ① — 안되/안돼",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t3-1",
+          "type": "quiz",
+          "text": "친구에게 거짓말을 하면 [quiz_1].",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["안돼", "안되"],
+              "answer": "안돼"
+            }
+          },
+          "theme": "grammar"
+        },
+        {
+          "id": "s3-t3-2",
+          "type": "quiz",
+          "text": "숙제를 [quiz_1] 선생님께 혼났다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["안 해서", "안해서"],
+              "answer": "안 해서"
+            }
+          },
+          "theme": "grammar"
+        }
+      ]
+    },
+    {
+      "id": 304,
+      "stageId": 3,
+      "order": 4,
+      "title": "빛과 그림자",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t4-1",
+          "type": "normal",
+          "text": "빛은 직진하며 불투명한 물체는 그림자를 만든다.",
+          "theme": "science"
+        },
+        {
+          "id": "s3-t4-2",
+          "type": "normal",
+          "text": "빛이 물속에서 꺾이는 현상을 굴절이라고 한다.",
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 305,
+      "stageId": 3,
+      "order": 5,
+      "title": "맞춤법 퀴즈 ② — 않/안",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t5-1",
+          "type": "quiz",
+          "text": "나는 매일 운동을 [quiz_1] 건강해졌다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["해서", "했더니"],
+              "answer": "했더니"
+            }
+          },
+          "theme": "grammar"
+        },
+        {
+          "id": "s3-t5-2",
+          "type": "quiz",
+          "text": "숙제를 [quiz_1] 게임을 하면 [quiz_2].",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["하지 않고", "안하고"],
+              "answer": "하지 않고"
+            },
+            "quiz_2": {
+              "choices": ["안돼", "안되"],
+              "answer": "안돼"
+            }
+          },
+          "theme": "grammar"
+        }
+      ]
+    },
+    {
+      "id": 306,
+      "stageId": 3,
+      "order": 6,
+      "title": "혼합물과 순물질",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t6-1",
+          "type": "normal",
+          "text": "혼합물은 두 가지 이상의 물질이 섞인 것이다.",
+          "theme": "science"
+        },
+        {
+          "id": "s3-t6-2",
+          "type": "normal",
+          "text": "소금물은 물과 소금이 섞인 대표적인 혼합물이다.",
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 307,
+      "stageId": 3,
+      "order": 7,
+      "title": "맞춤법 퀴즈 ③ — 되/돼",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t7-1",
+          "type": "quiz",
+          "text": "책을 많이 읽으면 어휘력이 [quiz_1].",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["좋아져", "좋아지"],
+              "answer": "좋아져"
+            }
+          },
+          "theme": "grammar"
+        },
+        {
+          "id": "s3-t7-2",
+          "type": "quiz",
+          "text": "꿈이 이루어지면 정말 [quiz_1] 것이다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["좋을", "좋은"],
+              "answer": "좋을"
+            }
+          },
+          "theme": "grammar"
+        }
+      ]
+    },
+    {
+      "id": 308,
+      "stageId": 3,
+      "order": 8,
+      "title": "달과 태양 — 종합",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s3-t8-1",
+          "type": "normal",
+          "text": "달은 스스로 빛을 내지 못하고 태양 빛을 반사한다.",
+          "theme": "science"
+        },
+        {
+          "id": "s3-t8-2",
+          "type": "quiz",
+          "text": "달이 스스로 빛을 내지 [quiz_1] 지구에서 볼 수 있다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["못해도", "못해서도"],
+              "answer": "못해도"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    }
+  ]
+}

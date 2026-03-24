@@ -1,0 +1,174 @@
+{
+  "id": 4,
+  "title": "긴 글 연습",
+  "description": "긴 과학 지문을 읽고 타이핑하며 독해력을 키워요",
+  "starConditions": {
+    "one":   { "mustComplete": true },
+    "two":   { "wpm": 120, "accuracy": 90 },
+    "three": { "wpm": 180, "quizScore": 100 }
+  },
+  "steps": [
+    {
+      "id": 401,
+      "stageId": 4,
+      "order": 1,
+      "title": "광합성의 원리",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t1-1",
+          "type": "normal",
+          "text": "식물은 햇빛, 물, 이산화탄소를 이용해 스스로 양분을 만든다. 이 과정을 광합성이라고 한다. 광합성은 잎 속에 있는 엽록체에서 일어난다. 광합성 결과 포도당과 산소가 만들어진다. 우리가 숨 쉬는 산소도 식물의 광합성 덕분이다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t1-2",
+          "type": "quiz",
+          "text": "광합성에 필요한 것은 햇빛, 물, [quiz_1]이다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["이산화탄소", "산소"],
+              "answer": "이산화탄소"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 402,
+      "stageId": 4,
+      "order": 2,
+      "title": "지구와 달의 관계",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t2-1",
+          "type": "normal",
+          "text": "달은 지구 주위를 약 한 달에 한 바퀴 공전한다. 달은 스스로 빛을 내지 못하고, 태양 빛을 반사하여 빛난다. 달의 모양이 매일 조금씩 달라 보이는 것은 달과 지구, 태양의 위치가 변하기 때문이다. 보름달, 반달, 그믐달은 모두 같은 달이다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t2-2",
+          "type": "quiz",
+          "text": "달이 빛나는 이유는 [quiz_1]을 반사하기 때문이다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["태양 빛", "지구 빛"],
+              "answer": "태양 빛"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 403,
+      "stageId": 4,
+      "order": 3,
+      "title": "먹이사슬과 생태계",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t3-1",
+          "type": "normal",
+          "text": "생태계에서 생물들은 서로 먹고 먹히는 관계로 연결되어 있다. 이를 먹이사슬이라고 한다. 식물처럼 스스로 양분을 만드는 생물을 생산자라고 한다. 동물처럼 다른 생물을 먹어 양분을 얻는 생물을 소비자라고 한다. 죽은 생물을 분해하는 곰팡이나 세균은 분해자이다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t3-2",
+          "type": "quiz",
+          "text": "스스로 양분을 만드는 생물을 [quiz_1]라고 한다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["생산자", "소비자"],
+              "answer": "생산자"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 404,
+      "stageId": 4,
+      "order": 4,
+      "title": "물의 순환",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t4-1",
+          "type": "normal",
+          "text": "지구의 물은 끊임없이 순환한다. 바다나 강의 물이 햇빛을 받아 수증기로 변하는 것을 증발이라고 한다. 수증기는 하늘로 올라가 구름이 되고, 구름이 모이면 비나 눈으로 내린다. 이렇게 물은 액체, 기체, 고체 상태로 끊임없이 변하며 순환한다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t4-2",
+          "type": "quiz",
+          "text": "물이 수증기로 변하는 현상을 [quiz_1]이라고 한다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["증발", "응결"],
+              "answer": "증발"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 405,
+      "stageId": 4,
+      "order": 5,
+      "title": "빛의 성질",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t5-1",
+          "type": "normal",
+          "text": "빛은 직진하는 성질이 있다. 빛이 유리나 물처럼 투명한 물질을 통과할 때 꺾이는 현상을 굴절이라고 한다. 빛이 거울에 부딪혀 되돌아오는 것을 반사라고 한다. 프리즘을 통과한 빛은 여러 가지 색으로 나뉘는데, 이를 빛의 분산이라고 한다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t5-2",
+          "type": "quiz",
+          "text": "빛이 물속에서 꺾이는 현상을 [quiz_1]이라고 한다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["굴절", "반사"],
+              "answer": "굴절"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    },
+    {
+      "id": 406,
+      "stageId": 4,
+      "order": 6,
+      "title": "인류의 발명 이야기",
+      "targetKeys": [],
+      "typingData": [
+        {
+          "id": "s4-t6-1",
+          "type": "normal",
+          "text": "인류는 오랜 역사 동안 많은 것을 발명하고 발견해 왔다. 바퀴, 전기, 인터넷 등의 발명은 사람들의 삶을 크게 바꾸었다. 발명은 불편함을 해결하려는 호기심에서 시작된다. 우리 주변의 작은 문제를 해결하려는 노력이 위대한 발명으로 이어질 수 있다.",
+          "theme": "science"
+        },
+        {
+          "id": "s4-t6-2",
+          "type": "quiz",
+          "text": "발명은 [quiz_1]을 해결하려는 호기심에서 시작된다.",
+          "quizOptions": {
+            "quiz_1": {
+              "choices": ["불편함", "편리함"],
+              "answer": "불편함"
+            }
+          },
+          "theme": "science"
+        }
+      ]
+    }
+  ]
+}
