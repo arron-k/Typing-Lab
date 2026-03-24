@@ -89,8 +89,16 @@ export default function TypingArea({
       : getResolvedText()
 
     store.initSession(text, stageId, stepId)
+    if (inputRef.current) inputRef.current.value = ''
     inputRef.current?.focus()
   }, [typingData.id])
+
+  // 백스페이스/리셋 후 DOM 입력값을 스토어와 동기화 (조합 중이 아닐 때만)
+  useEffect(() => {
+    if (inputRef.current && !store.isComposing) {
+      inputRef.current.value = state.userInput
+    }
+  }, [state.userInput])
 
   // 완료 감지
   useEffect(() => {
@@ -192,11 +200,11 @@ export default function TypingArea({
       {/* 퀴즈 타입: 문제 표시 영역 */}
       {typingData.type === 'quiz' && renderQuizText()}
 
-      {/* 숨김 입력창 (실제 입력 받는 곳) */}
+      {/* 숨김 입력창 — 비제어(uncontrolled): value 제거로 한글 IME 조합 보호 */}
       <input
         ref={inputRef}
         type="text"
-        value={state.userInput}
+        defaultValue=""
         className="fixed opacity-0 top-[-100px] left-[-100px] w-px h-px"
         aria-hidden="true"
         readOnly={pendingQuizKey !== null}
