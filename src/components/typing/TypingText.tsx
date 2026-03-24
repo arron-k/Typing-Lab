@@ -2,12 +2,14 @@
 
 interface TypingTextProps {
   currentText: string
-  userInput: string
+  confirmedInput: string
+  composingChar: string
   isShaking: boolean
-  isComposing?: boolean
 }
 
-export default function TypingText({ currentText, userInput, isShaking, isComposing = false }: TypingTextProps) {
+export default function TypingText({ currentText, confirmedInput, composingChar, isShaking }: TypingTextProps) {
+  const cursorIndex = confirmedInput.length
+
   return (
     <div
       className={`
@@ -17,39 +19,38 @@ export default function TypingText({ currentText, userInput, isShaking, isCompos
       `}
     >
       {currentText.split('').map((char, index) => {
-        const inputChar = userInput[index]
-        const isComposingChar = isComposing && index === userInput.length - 1
-
+        let displayChar: string = char === ' ' ? '\u00A0' : char
         let charClass = 'text-gray-300'
+        let showCursor = false
 
-        if (index < userInput.length) {
-          if (isComposingChar) {
+        if (index < cursorIndex) {
+          charClass = confirmedInput[index] === char
+            ? 'text-green-600'
+            : 'text-red-500 bg-red-50 rounded'
+        } else if (index === cursorIndex) {
+          if (composingChar) {
+            displayChar = composingChar === ' ' ? '\u00A0' : composingChar
             charClass = 'text-blue-500 underline decoration-blue-400'
           } else {
-            charClass = inputChar === char
-              ? 'text-green-600'
-              : 'text-red-500 bg-red-50 rounded'
+            showCursor = true
+            charClass = 'text-gray-300'
           }
         }
 
-        const isCursor = !isComposing && index === userInput.length
-
         return (
           <span key={index} className="relative">
-            {isCursor && (
+            {showCursor && (
               <span
                 className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-blue-500 animate-[cursor-blink_1s_step-end_infinite]"
                 aria-hidden="true"
               />
             )}
-            <span className={charClass}>
-              {char === ' ' ? '\u00A0' : char}
-            </span>
+            <span className={charClass}>{displayChar}</span>
           </span>
         )
       })}
 
-      {userInput.length === currentText.length && currentText.length > 0 && (
+      {cursorIndex === currentText.length && currentText.length > 0 && (
         <span className="inline-block w-0.5 h-6 bg-green-500 align-middle ml-0.5" />
       )}
     </div>
