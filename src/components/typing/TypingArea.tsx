@@ -192,21 +192,12 @@ export default function TypingArea({
       {/* 퀴즈 타입: 문제 표시 영역 */}
       {typingData.type === 'quiz' && renderQuizText()}
 
-      {/* 타이핑 텍스트 */}
-      {pendingQuizKey === null && (
-        <TypingText
-          currentText={store.currentText}
-          userInput={state.userInput}
-          isShaking={state.isShaking}
-        />
-      )}
-
       {/* 숨김 입력창 (실제 입력 받는 곳) */}
       <input
         ref={inputRef}
         type="text"
         value={state.userInput}
-        className="opacity-0 absolute w-0 h-0 pointer-events-none"
+        className="fixed opacity-0 top-[-100px] left-[-100px] w-px h-px"
         aria-hidden="true"
         readOnly={pendingQuizKey !== null}
         {...inputHandlers}
@@ -215,6 +206,17 @@ export default function TypingArea({
         autoCapitalize="off"
         spellCheck={false}
       />
+
+      {/* 타이핑 텍스트 — 클릭 시 포커스 */}
+      {pendingQuizKey === null && (
+        <div onClick={() => inputRef.current?.focus()} className="cursor-text">
+          <TypingText
+            currentText={store.currentText}
+            userInput={state.userInput}
+            isShaking={state.isShaking}
+          />
+        </div>
+      )}
 
       {/* 입력 유도 클릭 영역 */}
       <button
