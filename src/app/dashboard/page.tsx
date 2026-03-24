@@ -7,7 +7,7 @@ import { useProgressStore } from '@/store/useProgressStore'
 import { getAllStages } from '@/lib/curriculum'
 import StageCard from '@/components/dashboard/StageCard'
 import LeoAvatar from '@/components/character/LeoAvatar'
-import { use, useState } from 'react'
+import { useState } from 'react'
 import type { StageData } from '@/types'
 
 export default function DashboardPage() {
