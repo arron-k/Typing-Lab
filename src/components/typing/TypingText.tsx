@@ -4,9 +4,10 @@ interface TypingTextProps {
   currentText: string
   userInput: string
   isShaking: boolean
+  isComposing?: boolean
 }
 
-export default function TypingText({ currentText, userInput, isShaking }: TypingTextProps) {
+export default function TypingText({ currentText, userInput, isShaking, isComposing = false }: TypingTextProps) {
   return (
     <div
       className={`
@@ -17,20 +18,24 @@ export default function TypingText({ currentText, userInput, isShaking }: Typing
     >
       {currentText.split('').map((char, index) => {
         const inputChar = userInput[index]
+        const isComposingChar = isComposing && index === userInput.length - 1
 
-        let charClass = 'text-gray-300'  // 아직 입력 안 됨
+        let charClass = 'text-gray-300'
 
         if (index < userInput.length) {
-          charClass = inputChar === char
-            ? 'text-green-600'  // 올바른 입력
-            : 'text-red-500 bg-red-50 rounded'  // 오타
+          if (isComposingChar) {
+            charClass = 'text-blue-500 underline decoration-blue-400'
+          } else {
+            charClass = inputChar === char
+              ? 'text-green-600'
+              : 'text-red-500 bg-red-50 rounded'
+          }
         }
 
-        const isCursor = index === userInput.length
+        const isCursor = !isComposing && index === userInput.length
 
         return (
           <span key={index} className="relative">
-            {/* 커서 */}
             {isCursor && (
               <span
                 className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-blue-500 animate-[cursor-blink_1s_step-end_infinite]"
@@ -44,7 +49,6 @@ export default function TypingText({ currentText, userInput, isShaking }: Typing
         )
       })}
 
-      {/* 텍스트 끝 커서 */}
       {userInput.length === currentText.length && currentText.length > 0 && (
         <span className="inline-block w-0.5 h-6 bg-green-500 align-middle ml-0.5" />
       )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTypingStore } from '@/store/useTypingStore'
 import { useTypingEngine } from '@/hooks/useTypingEngine'
 import TypingText from './TypingText'
@@ -72,6 +72,8 @@ export default function TypingArea({
 
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
   const [pendingQuizKey, setPendingQuizKey] = useState<string | null>(null)
+  // 실시간 입력값 (IME 조합 중 포함) — TypingText 즉시 피드백용
+  const [liveValue, setLiveValue] = useState('')
 
   // 퀴즈를 포함한 실제 타이핑 텍스트 계산
   const getResolvedText = () => {
@@ -89,14 +91,16 @@ export default function TypingArea({
       : getResolvedText()
 
     store.initSession(text, stageId, stepId)
+    setLiveValue('')
     if (inputRef.current) inputRef.current.value = ''
     inputRef.current?.focus()
   }, [typingData.id])
 
-  // 백스페이스/리셋 후 DOM 입력값을 스토어와 동기화 (조합 중이 아닐 때만)
+  // 백스페이스/리셋 후 DOM 입력값 + liveValue를 스토어와 동기화 (조합 중이 아닐 때만)
   useEffect(() => {
-    if (inputRef.current && !store.isComposing) {
-      inputRef.current.value = state.userInput
+    if (!store.isComposing) {
+      setLiveValue(state.userInput)
+      if (inputRef.current) inputRef.current.value = state.userInput
     }
   }, [state.userInput])
 
@@ -142,9 +146,15 @@ export default function TypingArea({
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  // 다음 눌러야 할 키 계산
+  // onChange 오버라이드 — 조합 중에도 liveValue 즉시 업데이트
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLiveValue(e.target.value)
+    inputHandlers.onChange(e)
+  }, [inputHandlers])
+
+  // 다음 눌러야 할 키 계산 (liveValue 기준으로 커서 위치 계산)
   const currentText = store.currentText
-  const nextChar = currentText[state.cursorIndex]
+  const nextChar = currentText[liveValue.length]
   const nextKey = nextChar ? getNextKeyForChar(nextChar) : undefined
 
   // WPM 실시간 표시 (0이면 숨김)
@@ -209,19 +219,21 @@ export default function TypingArea({
         aria-hidden="true"
         readOnly={pendingQuizKey !== null}
         {...inputHandlers}
+        onChange={handleChange}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
       />
 
-      {/* 타이핑 텍스트 — 클릭 시 포커스 */}
+      {/* 타이핑 텍스트 — 클릭 시 포커스, liveValue로 즉시 피드백 */}
       {pendingQuizKey === null && (
         <div onClick={() => inputRef.current?.focus()} className="cursor-text">
           <TypingText
             currentText={store.currentText}
-            userInput={state.userInput}
+            userInput={liveValue}
             isShaking={state.isShaking}
+            isComposing={store.isComposing}
           />
         </div>
       )}
