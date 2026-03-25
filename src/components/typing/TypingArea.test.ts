@@ -4,7 +4,7 @@
  *
  * 두벌식 기준 주요 매핑:
  *   ㅇ → d   ㄱ → r   ㅏ → k   ㅕ → u   ㅣ → l
- *   ㅃ → shift+q   ㅆ → shift+t   ㅖ → shift+p
+ *   ㅃ → shift-r+q   ㅆ → shift-r+t   ㅖ → shift-l+p
  */
 
 // TypingArea는 'use client' 컴포넌트이므로 순수 함수만 추출해 테스트
@@ -23,20 +23,33 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   'ㅒ': 'o', 'ㅖ': 'p',
   ' ': ' ',
 }
-const SHIFT_JAMO = new Set(['ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ'])
+
+// 쌍자음/쌍모음 → { 기본키, 눌러야 할 Shift 방향 }
+// 한컴타자 방식: 타겟 키의 반대쪽 손 Shift를 사용
+// 왼손 키(q~t) → shift-r / 오른손 키(o, p) → shift-l
+const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r' }> = {
+  'ㅃ': { key: 'q', shift: 'shift-r' },
+  'ㅉ': { key: 'w', shift: 'shift-r' },
+  'ㄸ': { key: 'e', shift: 'shift-r' },
+  'ㄲ': { key: 'r', shift: 'shift-r' },
+  'ㅆ': { key: 't', shift: 'shift-r' },
+  'ㅒ': { key: 'o', shift: 'shift-l' },
+  'ㅖ': { key: 'p', shift: 'shift-l' },
+}
 
 function getFirstKeys(char: string): string[] {
   if (char === ' ') return [' ']
-  if (HANGUL_KEY_MAP[char]) {
-    const key = HANGUL_KEY_MAP[char]
-    return SHIFT_JAMO.has(char) ? ['shift-l', 'shift-r', key] : [key]
-  }
+  const shiftEntry = SHIFT_JAMO_MAP[char]
+  if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
+  if (HANGUL_KEY_MAP[char]) return [HANGUL_KEY_MAP[char]]
   const code = char.charCodeAt(0)
   if (code >= 0xac00 && code <= 0xd7a3) {
     const firstJamo = disassembleToGroups(char)[0]?.[0]
     if (firstJamo) {
+      const shiftFirst = SHIFT_JAMO_MAP[firstJamo]
+      if (shiftFirst) return [shiftFirst.shift, shiftFirst.key]
       const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
-      return SHIFT_JAMO.has(firstJamo) ? ['shift-l', 'shift-r', key] : [key]
+      return [key]
     }
   }
   return [char.toLowerCase()]
@@ -52,8 +65,10 @@ function getNextKeys(targetChar: string, composingChar: string): string[] {
     if (composingJamos.length >= targetJamos.length) return []
     const nextJamo = targetJamos[composingJamos.length]
     if (nextJamo) {
+      const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
+      if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
       const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
-      return SHIFT_JAMO.has(nextJamo) ? ['shift-l', 'shift-r', key] : [key]
+      return [key]
     }
   }
   return getFirstKeys(targetChar)
@@ -92,16 +107,20 @@ describe('getFirstKeys', () => {
     expect(getFirstKeys('A')).toEqual(['a'])
   })
 
-  test('쌍자음 ㅃ → shift+q 두 키', () => {
-    expect(getFirstKeys('ㅃ')).toEqual(['shift-l', 'shift-r', 'q'])
+  test('쌍자음 ㅃ → shift-r+q (왼손 키이므로 오른쪽 Shift)', () => {
+    expect(getFirstKeys('ㅃ')).toEqual(['shift-r', 'q'])
   })
 
-  test('쌍자음 ㄲ → shift+r 두 키', () => {
-    expect(getFirstKeys('ㄲ')).toEqual(['shift-l', 'shift-r', 'r'])
+  test('쌍자음 ㄲ → shift-r+r (왼손 키이므로 오른쪽 Shift)', () => {
+    expect(getFirstKeys('ㄲ')).toEqual(['shift-r', 'r'])
   })
 
-  test('쌍모음 ㅖ → shift+p 두 키', () => {
-    expect(getFirstKeys('ㅖ')).toEqual(['shift-l', 'shift-r', 'p'])
+  test('쌍모음 ㅖ → shift-l+p (오른손 키이므로 왼쪽 Shift)', () => {
+    expect(getFirstKeys('ㅖ')).toEqual(['shift-l', 'p'])
+  })
+
+  test('쌍모음 ㅒ → shift-l+o (오른손 키이므로 왼쪽 Shift)', () => {
+    expect(getFirstKeys('ㅒ')).toEqual(['shift-l', 'o'])
   })
 })
 
@@ -121,9 +140,8 @@ describe('getNextKeys — 조합 없음 (첫 자모 안내)', () => {
     expect(getNextKeys('기', '')).toEqual(['r'])
   })
 
-  test('쌍자음 시작 글자: composing 없음 → shift 포함', () => {
-    // 없는 글자지만 standalone 쌍자음 테스트
-    expect(getNextKeys('ㅃ', '')).toEqual(['shift-l', 'shift-r', 'q'])
+  test('쌍자음 시작 글자: composing 없음 → shift-r 포함', () => {
+    expect(getNextKeys('ㅃ', '')).toEqual(['shift-r', 'q'])
   })
 })
 
@@ -157,7 +175,6 @@ describe('getNextKeys — 자모 조합 진행 중', () => {
 // ─────────────────────────────────────────────
 describe('getNextKeys — 글자 완성 후 [] 반환 (핵심 버그 수정 검증)', () => {
   test('여 완성(ㅇ+ㅕ) 후 → [] (ㅇ 다시 안내하면 안 됨)', () => {
-    // 버그: composingChar="여"일 때 getFirstKeys('여')→['d'] 반환하던 문제
     expect(getNextKeys('여', '여')).toEqual([])
   })
 
@@ -170,12 +187,10 @@ describe('getNextKeys — 글자 완성 후 [] 반환 (핵심 버그 수정 검�
   })
 
   test('하 조합 중(ㅎ+ㅏ)이고 타겟이 한(받침 있음) → ㄴ (s키) 안내', () => {
-    // composingJamos=['ㅎ','ㅏ'].length=2 < targetJamos=['ㅎ','ㅏ','ㄴ'].length=3 → 아직 안내 필요
     expect(getNextKeys('한', '하')).toEqual(['s'])
   })
 
   test('hasBatchimExtension: 어 타겟인데 composing이 엉 → [] (타겟 완성)', () => {
-    // composingJamos=['ㅇ','ㅓ','ㅇ'].length=3 >= targetJamos=['ㅇ','ㅓ'].length=2
     expect(getNextKeys('어', '엉')).toEqual([])
   })
 })

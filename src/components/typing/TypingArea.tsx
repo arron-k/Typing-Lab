@@ -30,22 +30,33 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   ' ': ' ',
 }
 
-// Shift가 필요한 자모 집합 (두벌식 기준)
-const SHIFT_JAMO = new Set(['ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ'])
+// 쌍자음/쌍모음 → { 기본키, 눌러야 할 Shift 방향 }
+// 한컴타자 방식: 타겟 키의 반대쪽 손 Shift를 사용
+// 왼손 키(q~t, a~g, z~b) → shift-r / 오른손 키(y~p, h~;, n~m) → shift-l
+const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r' }> = {
+  'ㅃ': { key: 'q', shift: 'shift-r' },
+  'ㅉ': { key: 'w', shift: 'shift-r' },
+  'ㄸ': { key: 'e', shift: 'shift-r' },
+  'ㄲ': { key: 'r', shift: 'shift-r' },
+  'ㅆ': { key: 't', shift: 'shift-r' },
+  'ㅒ': { key: 'o', shift: 'shift-l' },
+  'ㅖ': { key: 'p', shift: 'shift-l' },
+}
 
 function getFirstKeys(char: string): string[] {
   if (char === ' ') return [' ']
-  if (HANGUL_KEY_MAP[char]) {
-    const key = HANGUL_KEY_MAP[char]
-    return SHIFT_JAMO.has(char) ? ['shift-l', 'shift-r', key] : [key]
-  }
+  const shiftEntry = SHIFT_JAMO_MAP[char]
+  if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
+  if (HANGUL_KEY_MAP[char]) return [HANGUL_KEY_MAP[char]]
 
   const code = char.charCodeAt(0)
   if (code >= 0xac00 && code <= 0xd7a3) {
     const firstJamo = disassembleToGroups(char)[0]?.[0]
     if (firstJamo) {
+      const shiftFirst = SHIFT_JAMO_MAP[firstJamo]
+      if (shiftFirst) return [shiftFirst.shift, shiftFirst.key]
       const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
-      return SHIFT_JAMO.has(firstJamo) ? ['shift-l', 'shift-r', key] : [key]
+      return [key]
     }
   }
 
@@ -66,8 +77,10 @@ function getNextKeys(targetChar: string, composingChar: string): string[] {
     if (composingJamos.length >= targetJamos.length) return []
     const nextJamo = targetJamos[composingJamos.length]
     if (nextJamo) {
+      const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
+      if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
       const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
-      return SHIFT_JAMO.has(nextJamo) ? ['shift-l', 'shift-r', key] : [key]
+      return [key]
     }
   }
 
@@ -257,7 +270,7 @@ export default function TypingArea({
         화면을 클릭하면 타이핑을 시작할 수 있어요
       </p>
 
-      <VirtualKeyboard targetKeys={targetKeys} nextKeys={nextKeys} />
+      <VirtualKeyboard nextKeys={nextKeys} />
     </div>
   )
 }
