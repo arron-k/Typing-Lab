@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useTypingStore } from '@/store/useTypingStore'
 
 /**
@@ -9,6 +9,8 @@ import { useTypingStore } from '@/store/useTypingStore'
  */
 export function useTypingEngine() {
   const store = useTypingStore()
+  // store.isComposing은 stale closure 문제가 있으므로 ref로 동기 추적
+  const isComposingRef = useRef(false)
 
   // 페이지 언마운트 시 스토어 초기화
   useEffect(() => {
@@ -18,12 +20,15 @@ export function useTypingEngine() {
   }, [])
 
   const onCompositionStart = useCallback(() => {
+    isComposingRef.current = true
     store.handleCompositionStart()
   }, [store])
 
   const onCompositionEnd = useCallback(
-    (e: React.CompositionEvent<HTMLInputElement>) => {
-      store.handleCompositionEnd(e.currentTarget.value)
+    (_e: React.CompositionEvent<HTMLInputElement>) => {
+      isComposingRef.current = false
+      store.handleCompositionEnd()
+      // handleInput은 compositionEnd 직후 발화되는 onChange에서 처리
     },
     [store]
   )
@@ -31,7 +36,7 @@ export function useTypingEngine() {
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       // IME 조합 중 Enter/Space 중복 이벤트 방지
-      if (store.isComposing && (e.key === 'Enter' || e.key === ' ')) {
+      if (isComposingRef.current && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault()
         return
       }
@@ -47,8 +52,8 @@ export function useTypingEngine() {
 
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      // IME compositionEnd 후 중복 호출 방지
-      if (store.isComposing) return
+      // ref 기준으로 조합 중 여부 판단 (stale closure 방지)
+      if (isComposingRef.current) return
       store.handleInput(e.target.value)
     },
     [store]

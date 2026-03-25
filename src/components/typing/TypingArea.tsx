@@ -24,36 +24,52 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   'ㅂ': 'q', 'ㅈ': 'w', 'ㄷ': 'e', 'ㄱ': 'r', 'ㅅ': 't',
   'ㅁ': 'a', 'ㄴ': 's', 'ㅇ': 'd', 'ㄹ': 'f', 'ㅎ': 'g',
   'ㅋ': 'z', 'ㅌ': 'x', 'ㅊ': 'c', 'ㅍ': 'v',
+  // 쌍자음 + 쌍모음 (Shift 필요)
+  'ㅃ': 'q', 'ㅉ': 'w', 'ㄸ': 'e', 'ㄲ': 'r', 'ㅆ': 't',
+  'ㅒ': 'o', 'ㅖ': 'p',
   ' ': ' ',
 }
 
-function getFirstKey(char: string): string {
-  if (char === ' ') return ' '
-  if (HANGUL_KEY_MAP[char]) return HANGUL_KEY_MAP[char]
+// Shift가 필요한 자모 집합 (두벌식 기준)
+const SHIFT_JAMO = new Set(['ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ'])
+
+function getFirstKeys(char: string): string[] {
+  if (char === ' ') return [' ']
+  if (HANGUL_KEY_MAP[char]) {
+    const key = HANGUL_KEY_MAP[char]
+    return SHIFT_JAMO.has(char) ? ['shift-l', 'shift-r', key] : [key]
+  }
 
   const code = char.charCodeAt(0)
   if (code >= 0xac00 && code <= 0xd7a3) {
     const firstJamo = disassembleToGroups(char)[0]?.[0]
-    if (firstJamo) return HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
+    if (firstJamo) {
+      const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
+      return SHIFT_JAMO.has(firstJamo) ? ['shift-l', 'shift-r', key] : [key]
+    }
   }
 
-  return char.toLowerCase()
+  return [char.toLowerCase()]
 }
 
-// 조합 중인 자모 위치를 추적해 다음에 눌러야 할 키 반환
-function getNextKey(targetChar: string, composingChar: string): string | undefined {
-  if (!targetChar) return undefined
-  if (!composingChar) return getFirstKey(targetChar)
+// 조합 중인 자모 위치를 추적해 다음에 눌러야 할 키 목록 반환
+// 쌍자음/쌍모음이면 ['shift-l', 'shift-r', 'q'] 형태로 Shift 포함
+function getNextKeys(targetChar: string, composingChar: string): string[] {
+  if (!targetChar) return []
+  if (!composingChar) return getFirstKeys(targetChar)
 
   const targetCode = targetChar.charCodeAt(0)
   if (targetCode >= 0xac00 && targetCode <= 0xd7a3) {
     const targetJamos = disassembleToGroups(targetChar)[0] ?? []
     const composingJamos = disassembleToGroups(composingChar)[0] ?? []
     const nextJamo = targetJamos[composingJamos.length]
-    if (nextJamo) return HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
+    if (nextJamo) {
+      const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
+      return SHIFT_JAMO.has(nextJamo) ? ['shift-l', 'shift-r', key] : [key]
+    }
   }
 
-  return getFirstKey(targetChar)
+  return getFirstKeys(targetChar)
 }
 
 function parseTextWithQuiz(text: string): Array<{ type: 'text' | 'quiz'; content: string; key?: string }> {
@@ -79,6 +95,7 @@ export default function TypingArea({
   typingData, stageId, stepId, targetKeys, onComplete,
 }: TypingAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const isComposingRef = useRef(false)
   const store = useTypingStore()
   const { inputHandlers, state } = useTypingEngine()
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
@@ -142,25 +159,31 @@ export default function TypingArea({
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  // onChange: 조합 중일 때 composingChar 추출 (확정된 글자 이후 부분)
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (store.isComposing) {
-      const composing = e.target.value.slice(state.userInput.length)
-      setComposingChar(composing)
-    } else {
-      setComposingChar('')
-      inputHandlers.onChange(e)
-    }
-  }, [store.isComposing, state.userInput, inputHandlers])
+  // compositionStart: ref 동기화 후 엔진 핸들러 호출
+  const handleCompositionStart = useCallback(() => {
+    isComposingRef.current = true
+    inputHandlers.onCompositionStart()
+  }, [inputHandlers])
 
-  // compositionEnd 후 composingChar 초기화
+  // compositionEnd: ref 먼저 false로 설정 → onChange가 handleInput 처리
   const handleCompositionEnd = useCallback((e: React.CompositionEvent<HTMLInputElement>) => {
+    isComposingRef.current = false
     setComposingChar('')
     inputHandlers.onCompositionEnd(e)
   }, [inputHandlers])
 
+  // onChange: ref 기준으로 조합 중 여부 판단 (stale closure 방지)
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isComposingRef.current) {
+      setComposingChar(e.target.value.slice(state.userInput.length))
+    } else {
+      setComposingChar('')
+      inputHandlers.onChange(e)
+    }
+  }, [state.userInput, inputHandlers])
+
   const currentText = store.currentText
-  const nextKey = getNextKey(currentText[state.userInput.length], composingChar)
+  const nextKeys = getNextKeys(currentText[state.userInput.length], composingChar)
 
   const showStats = store.startTime !== null
 
@@ -205,8 +228,9 @@ export default function TypingArea({
         aria-hidden="true"
         readOnly={pendingQuizKey !== null}
         {...inputHandlers}
-        onChange={handleChange}
+        onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
+        onChange={handleChange}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
@@ -227,7 +251,7 @@ export default function TypingArea({
         화면을 클릭하면 타이핑을 시작할 수 있어요
       </p>
 
-      <VirtualKeyboard targetKeys={targetKeys} nextKey={nextKey} />
+      <VirtualKeyboard targetKeys={targetKeys} nextKeys={nextKeys} />
     </div>
   )
 }
