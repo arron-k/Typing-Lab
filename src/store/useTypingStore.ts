@@ -35,7 +35,7 @@ interface TypingState {
   initSession: (text: string, stageId: number, stepId: number) => void
   handleInput: (value: string) => void
   handleCompositionStart: () => void
-  handleCompositionEnd: () => void
+  handleCompositionEnd: (value: string) => void
   handleBackspace: () => void
   selectQuizAnswer: (placeholderKey: string, answer: string) => void
   dismissShake: () => void
@@ -77,9 +77,9 @@ export const useTypingStore = create<TypingState>((set, get) => ({
     set({ isComposing: true })
   },
 
-  handleCompositionEnd: () => {
+  handleCompositionEnd: (value: string) => {
     set({ isComposing: false })
-    // onChange가 compositionEnd 직후 발화되어 handleInput을 단독 처리
+    get().handleInput(value)
   },
 
   handleInput: (value: string) => {
