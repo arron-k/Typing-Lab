@@ -62,6 +62,8 @@ function getNextKeys(targetChar: string, composingChar: string): string[] {
   if (targetCode >= 0xac00 && targetCode <= 0xd7a3) {
     const targetJamos = disassembleToGroups(targetChar)[0] ?? []
     const composingJamos = disassembleToGroups(composingChar)[0] ?? []
+    // 현재 글자의 자모를 모두 입력한 상태 → 키보드 안내 없음 (확정 대기)
+    if (composingJamos.length >= targetJamos.length) return []
     const nextJamo = targetJamos[composingJamos.length]
     if (nextJamo) {
       const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
