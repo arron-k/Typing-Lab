@@ -6,18 +6,20 @@ import { KEYBOARD_ROWS } from './keymap'
 
 interface VirtualKeyboardProps {
   targetKeys: string[]
-  nextKey?: string
+  nextKeys?: string[]
 }
 
-export default function VirtualKeyboard({ targetKeys, nextKey }: VirtualKeyboardProps) {
-  const [pressedKey, setPressedKey] = useState<string | null>(null)
+export default function VirtualKeyboard({ targetKeys, nextKeys }: VirtualKeyboardProps) {
+  const [pressedKeys, setPressedKeys] = useState<string[]>([])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key === ' ' ? ' ' : e.key.toLowerCase()
-      setPressedKey(key)
+      const keys = [key]
+      if (e.shiftKey) keys.push('shift-l', 'shift-r')
+      setPressedKeys(keys)
     }
-    const handleKeyUp = () => setPressedKey(null)
+    const handleKeyUp = () => setPressedKeys([])
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
@@ -39,8 +41,8 @@ export default function VirtualKeyboard({ targetKeys, nextKey }: VirtualKeyboard
               <KeyCap
                 key={keyInfo.key}
                 keyInfo={keyInfo}
-                isTarget={keyInfo.key === nextKey}
-                isPressed={pressedKey === keyInfo.key}
+                isTarget={nextKeys?.includes(keyInfo.key) ?? false}
+                isPressed={pressedKeys.includes(keyInfo.key)}
               />
             ))}
           </div>
