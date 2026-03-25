@@ -8,6 +8,7 @@ import QuizPopup from './QuizPopup'
 import VirtualKeyboard from '@/components/keyboard/VirtualKeyboard'
 import type { TypingData } from '@/types'
 import { useSettingsStore } from '@/store/useSettingsStore'
+import { disassembleToGroups } from 'es-hangul'
 
 interface TypingAreaProps {
   typingData: TypingData
@@ -29,7 +30,17 @@ const HANGUL_KEY_MAP: Record<string, string> = {
 
 function getNextKeyForChar(char: string): string {
   if (char === ' ') return ' '
-  return HANGUL_KEY_MAP[char] ?? char.toLowerCase()
+  if (HANGUL_KEY_MAP[char]) return HANGUL_KEY_MAP[char]
+
+  // 합성 한글 음절(가, 나, 다...) → 첫 번째 자모 키로 매핑
+  const code = char.charCodeAt(0)
+  if (code >= 0xac00 && code <= 0xd7a3) {
+    const groups = disassembleToGroups(char)
+    const firstJamo = groups[0]?.[0]
+    if (firstJamo) return HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
+  }
+
+  return char.toLowerCase()
 }
 
 function parseTextWithQuiz(text: string): Array<{ type: 'text' | 'quiz'; content: string; key?: string }> {
