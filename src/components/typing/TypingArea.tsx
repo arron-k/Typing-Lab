@@ -7,6 +7,7 @@ import TypingText from './TypingText'
 import QuizPopup from './QuizPopup'
 import VirtualKeyboard from '@/components/keyboard/VirtualKeyboard'
 import type { TypingData } from '@/types'
+import { useSettingsStore } from '@/store/useSettingsStore'
 
 interface TypingAreaProps {
   typingData: TypingData
@@ -56,6 +57,7 @@ export default function TypingArea({
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTypingStore()
   const { inputHandlers, state } = useTypingEngine()
+  const { showHandOverlay, toggleHandOverlay } = useSettingsStore()
 
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
   const [pendingQuizKey, setPendingQuizKey] = useState<string | null>(null)
@@ -206,7 +208,21 @@ export default function TypingArea({
         화면을 클릭하면 타이핑을 시작할 수 있어요
       </p>
 
-      <VirtualKeyboard targetKeys={targetKeys} nextKey={nextKey} />
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-end">
+          <button
+            onClick={toggleHandOverlay}
+            className={`text-xs px-2 py-1 rounded border transition-colors ${
+              showHandOverlay
+                ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
+                : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
+            }`}
+          >
+            손 가이드 {showHandOverlay ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <VirtualKeyboard targetKeys={targetKeys} nextKey={nextKey} />
+      </div>
     </div>
   )
 }
