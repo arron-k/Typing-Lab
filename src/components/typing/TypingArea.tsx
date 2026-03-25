@@ -96,6 +96,8 @@ export default function TypingArea({
 }: TypingAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const isComposingRef = useRef(false)
+  // 조합 시작 시점의 확정 입력값 — stale closure 없이 composingChar 범위 계산
+  const compositionBaseRef = useRef('')
   const store = useTypingStore()
   const { inputHandlers, state } = useTypingEngine()
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
@@ -160,7 +162,9 @@ export default function TypingArea({
   }
 
   // compositionStart: ref 동기화 후 엔진 핸들러 호출
+  // useTypingStore.getState()로 최신 userInput을 직접 읽어 stale closure 회피
   const handleCompositionStart = useCallback(() => {
+    compositionBaseRef.current = useTypingStore.getState().userInput
     isComposingRef.current = true
     inputHandlers.onCompositionStart()
   }, [inputHandlers])
@@ -172,15 +176,15 @@ export default function TypingArea({
     inputHandlers.onCompositionEnd(e)
   }, [inputHandlers])
 
-  // onChange: ref 기준으로 조합 중 여부 판단 (stale closure 방지)
+  // onChange: compositionBaseRef 기준으로 composingChar 추출 (stale closure 방지)
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComposingRef.current) {
-      setComposingChar(e.target.value.slice(state.userInput.length))
+      setComposingChar(e.target.value.slice(compositionBaseRef.current.length))
     } else {
       setComposingChar('')
       inputHandlers.onChange(e)
     }
-  }, [state.userInput, inputHandlers])
+  }, [inputHandlers])
 
   const currentText = store.currentText
   const nextKeys = getNextKeys(currentText[state.userInput.length], composingChar)

@@ -11,6 +11,9 @@ export function useTypingEngine() {
   const store = useTypingStore()
   // store.isComposing은 stale closure 문제가 있으므로 ref로 동기 추적
   const isComposingRef = useRef(false)
+  // compositionEnd에서 handleInput을 직접 호출하므로,
+  // 직후 발화되는 onChange의 이중 호출을 막기 위한 플래그
+  const compositionJustEndedRef = useRef(false)
 
   // 페이지 언마운트 시 스토어 초기화
   useEffect(() => {
@@ -25,10 +28,10 @@ export function useTypingEngine() {
   }, [store])
 
   const onCompositionEnd = useCallback(
-    (_e: React.CompositionEvent<HTMLInputElement>) => {
+    (e: React.CompositionEvent<HTMLInputElement>) => {
       isComposingRef.current = false
-      store.handleCompositionEnd()
-      // handleInput은 compositionEnd 직후 발화되는 onChange에서 처리
+      compositionJustEndedRef.current = true
+      store.handleCompositionEnd(e.currentTarget.value)
     },
     [store]
   )
@@ -54,6 +57,11 @@ export function useTypingEngine() {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       // ref 기준으로 조합 중 여부 판단 (stale closure 방지)
       if (isComposingRef.current) return
+      // compositionEnd가 이미 handleInput을 호출했으므로 이중 호출 방지
+      if (compositionJustEndedRef.current) {
+        compositionJustEndedRef.current = false
+        return
+      }
       store.handleInput(e.target.value)
     },
     [store]
