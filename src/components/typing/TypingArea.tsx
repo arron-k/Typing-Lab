@@ -7,7 +7,6 @@ import TypingText from './TypingText'
 import QuizPopup from './QuizPopup'
 import VirtualKeyboard from '@/components/keyboard/VirtualKeyboard'
 import type { TypingData } from '@/types'
-import { useSettingsStore } from '@/store/useSettingsStore'
 import { disassembleToGroups } from 'es-hangul'
 
 interface TypingAreaProps {
@@ -28,19 +27,33 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   ' ': ' ',
 }
 
-function getNextKeyForChar(char: string): string {
+function getFirstKey(char: string): string {
   if (char === ' ') return ' '
   if (HANGUL_KEY_MAP[char]) return HANGUL_KEY_MAP[char]
 
-  // 합성 한글 음절(가, 나, 다...) → 첫 번째 자모 키로 매핑
   const code = char.charCodeAt(0)
   if (code >= 0xac00 && code <= 0xd7a3) {
-    const groups = disassembleToGroups(char)
-    const firstJamo = groups[0]?.[0]
+    const firstJamo = disassembleToGroups(char)[0]?.[0]
     if (firstJamo) return HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
   }
 
   return char.toLowerCase()
+}
+
+// 조합 중인 자모 위치를 추적해 다음에 눌러야 할 키 반환
+function getNextKey(targetChar: string, composingChar: string): string | undefined {
+  if (!targetChar) return undefined
+  if (!composingChar) return getFirstKey(targetChar)
+
+  const targetCode = targetChar.charCodeAt(0)
+  if (targetCode >= 0xac00 && targetCode <= 0xd7a3) {
+    const targetJamos = disassembleToGroups(targetChar)[0] ?? []
+    const composingJamos = disassembleToGroups(composingChar)[0] ?? []
+    const nextJamo = targetJamos[composingJamos.length]
+    if (nextJamo) return HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
+  }
+
+  return getFirstKey(targetChar)
 }
 
 function parseTextWithQuiz(text: string): Array<{ type: 'text' | 'quiz'; content: string; key?: string }> {
@@ -68,8 +81,6 @@ export default function TypingArea({
   const inputRef = useRef<HTMLInputElement>(null)
   const store = useTypingStore()
   const { inputHandlers, state } = useTypingEngine()
-  const { showHandOverlay, toggleHandOverlay } = useSettingsStore()
-
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
   const [pendingQuizKey, setPendingQuizKey] = useState<string | null>(null)
   // IME 조합 중인 글자 (확정 전) — 타겟 위치에 직접 표시
@@ -148,11 +159,8 @@ export default function TypingArea({
     inputHandlers.onCompositionEnd(e)
   }, [inputHandlers])
 
-  // 가상 키보드: 확정 + 조합 이후 다음 글자 기준으로 키 하이라이트
   const currentText = store.currentText
-  const cursorPos = state.userInput.length + (composingChar ? 1 : 0)
-  const nextChar = currentText[cursorPos]
-  const nextKey = nextChar ? getNextKeyForChar(nextChar) : undefined
+  const nextKey = getNextKey(currentText[state.userInput.length], composingChar)
 
   const showStats = store.startTime !== null
 
@@ -219,21 +227,7 @@ export default function TypingArea({
         화면을 클릭하면 타이핑을 시작할 수 있어요
       </p>
 
-      <div className="flex flex-col gap-1">
-        <div className="flex justify-end">
-          <button
-            onClick={toggleHandOverlay}
-            className={`text-xs px-2 py-1 rounded border transition-colors ${
-              showHandOverlay
-                ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
-                : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'
-            }`}
-          >
-            손 가이드 {showHandOverlay ? 'ON' : 'OFF'}
-          </button>
-        </div>
-        <VirtualKeyboard targetKeys={targetKeys} nextKey={nextKey} />
-      </div>
+      <VirtualKeyboard targetKeys={targetKeys} nextKey={nextKey} />
     </div>
   )
 }

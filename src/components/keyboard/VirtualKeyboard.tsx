@@ -2,27 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import KeyCap from './KeyCap'
-import HandOverlay from './HandOverlay'
 import { KEYBOARD_ROWS } from './keymap'
-import { useSettingsStore } from '@/store/useSettingsStore'
-import type { FingerType, KeyInfo } from '@/types'
 
 interface VirtualKeyboardProps {
   targetKeys: string[]
   nextKey?: string
 }
 
-function findKeyInfo(key: string): KeyInfo | null {
-  for (const row of KEYBOARD_ROWS) {
-    const found = row.find((k) => k.key === key)
-    if (found) return found
-  }
-  return null
-}
-
 export default function VirtualKeyboard({ targetKeys, nextKey }: VirtualKeyboardProps) {
   const [pressedKey, setPressedKey] = useState<string | null>(null)
-  const showHandOverlay = useSettingsStore((s) => s.showHandOverlay)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,16 +26,6 @@ export default function VirtualKeyboard({ targetKeys, nextKey }: VirtualKeyboard
       window.removeEventListener('keyup', handleKeyUp)
     }
   }, [])
-
-  const nextKeyInfo = nextKey ? findKeyInfo(nextKey) : null
-  const guideFinger: FingerType | null = nextKeyInfo?.finger ?? null
-
-  const pressedKeyInfo = pressedKey ? findKeyInfo(pressedKey) : null
-  const pressedFinger: FingerType | null = pressedKeyInfo?.finger ?? null
-
-  // 눌린 키가 가이드 키와 일치하는지 — 정/오타 판단
-  const isCorrect: boolean | null =
-    pressedKey && nextKey ? pressedKey === nextKey : null
 
   return (
     <div
@@ -68,16 +46,6 @@ export default function VirtualKeyboard({ targetKeys, nextKey }: VirtualKeyboard
           </div>
         ))}
       </div>
-
-      {showHandOverlay && nextKey && (
-        <HandOverlay
-          guideKey={nextKey}
-          guideFinger={guideFinger}
-          pressedKey={pressedKey}
-          pressedFinger={pressedFinger}
-          isCorrect={isCorrect}
-        />
-      )}
     </div>
   )
 }
