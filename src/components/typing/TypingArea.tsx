@@ -7,7 +7,7 @@ import TypingText from './TypingText'
 import QuizPopup from './QuizPopup'
 import VirtualKeyboard from '@/components/keyboard/VirtualKeyboard'
 import type { TypingData } from '@/types'
-import { disassemble } from 'es-hangul'
+import { disassemble, assemble } from 'es-hangul'
 
 interface TypingAreaProps {
   typingData: TypingData
@@ -178,7 +178,13 @@ export default function TypingArea({
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComposingRef.current) {
-      setComposingChar(e.target.value.slice(compositionBaseRef.current.length))
+      // 문자 길이(char length) 기반 slice는 받침 임시 결합 시 오작동
+      // 예) compositionBase="바"(len=1), input="박"(len=1) → "박".slice(1) = "" (빈 문자열 버그)
+      // 자모 수 기반으로 슬라이싱해야 정확: disassemble("바")=2자모, disassemble("박")=3자모 → slice(2)=["ㄱ"]
+      const baseJamoCount = Array.from(disassemble(compositionBaseRef.current)).length
+      const inputJamo = Array.from(disassemble(e.target.value))
+      const newJamo = inputJamo.slice(baseJamoCount)
+      setComposingChar(newJamo.length > 0 ? assemble(newJamo) : '')
     } else {
       setComposingChar('')
       inputHandlers.onChange(e)
