@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import KeyCap from './KeyCap'
 import { KEYBOARD_ROWS } from './keymap'
 
- claude/typing-learning-service-design-2F4a1
 // e.code → keymap key 변환 테이블
 // 한영 상태와 무관하게 물리적 키 위치를 기준으로 감지
 const CODE_TO_KEY: Record<string, string> = {
@@ -35,19 +34,10 @@ interface VirtualKeyboardProps {
 }
 
 export default function VirtualKeyboard({ nextKeys }: VirtualKeyboardProps) {
-
-interface VirtualKeyboardProps {
-  targetKeys: string[]
-  nextKeys?: string[]
-}
-
-export default function VirtualKeyboard({ targetKeys, nextKeys }: VirtualKeyboardProps) {
- dev
   const [pressedKeys, setPressedKeys] = useState<string[]>([])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
- claude/typing-learning-service-design-2F4a1
       const key = CODE_TO_KEY[e.code]
       if (!key) return
       setPressedKeys(prev => prev.includes(key) ? prev : [...prev, key])
@@ -58,14 +48,6 @@ export default function VirtualKeyboard({ targetKeys, nextKeys }: VirtualKeyboar
       // 해당 키만 제거 — Shift 홀드 중 다른 키 릴리즈 시 Shift 점등 유지
       setPressedKeys(prev => prev.filter(k => k !== key))
     }
-
-      const key = e.key === ' ' ? ' ' : e.key.toLowerCase()
-      const keys = [key]
-      if (e.shiftKey) keys.push('shift-l', 'shift-r')
-      setPressedKeys(keys)
-    }
-    const handleKeyUp = () => setPressedKeys([])
- dev
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)

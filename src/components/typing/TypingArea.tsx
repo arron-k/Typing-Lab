@@ -7,7 +7,7 @@ import TypingText from './TypingText'
 import QuizPopup from './QuizPopup'
 import VirtualKeyboard from '@/components/keyboard/VirtualKeyboard'
 import type { TypingData } from '@/types'
-import { disassembleToGroups } from 'es-hangul'
+import { disassemble } from 'es-hangul'
 
 interface TypingAreaProps {
   typingData: TypingData
@@ -24,16 +24,13 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   'ㅂ': 'q', 'ㅈ': 'w', 'ㄷ': 'e', 'ㄱ': 'r', 'ㅅ': 't',
   'ㅁ': 'a', 'ㄴ': 's', 'ㅇ': 'd', 'ㄹ': 'f', 'ㅎ': 'g',
   'ㅋ': 'z', 'ㅌ': 'x', 'ㅊ': 'c', 'ㅍ': 'v',
-  // 쌍자음 + 쌍모음 (Shift 필요)
   'ㅃ': 'q', 'ㅉ': 'w', 'ㄸ': 'e', 'ㄲ': 'r', 'ㅆ': 't',
   'ㅒ': 'o', 'ㅖ': 'p',
   ' ': ' ',
 }
 
- claude/typing-learning-service-design-2F4a1
 // 쌍자음/쌍모음 → { 기본키, 눌러야 할 Shift 방향 }
-// 한컴타자 방식: 타겟 키의 반대쪽 손 Shift를 사용
-// 왼손 키(q~t, a~g, z~b) → shift-r / 오른손 키(y~p, h~;, n~m) → shift-l
+// 왼손 키(q~t) → shift-r / 오른손 키(o, p) → shift-l
 const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r' }> = {
   'ㅃ': { key: 'q', shift: 'shift-r' },
   'ㅉ': { key: 'w', shift: 'shift-r' },
@@ -44,69 +41,27 @@ const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r'
   'ㅖ': { key: 'p', shift: 'shift-l' },
 }
 
-function getFirstKeys(char: string): string[] {
-  if (char === ' ') return [' ']
-  const shiftEntry = SHIFT_JAMO_MAP[char]
+// disassemble 기반 flat 자모 비교
+// - 독립 자모("ㄷ")도 올바르게 처리 (disassembleToGroups per-syllable 방식 대체)
+// - 음절 경계를 넘는 경우도 정확히 계산 (바다: 바ㄷ → 다음 자모 ㅏ)
+function getNextKeys(targetText: string, inputValue: string): string[] {
+  if (!targetText) return []
+
+  const targetJamo = disassemble(targetText)
+  const inputJamo = disassemble(inputValue)
+
+  if (inputJamo.length >= targetJamo.length) return []
+
+  const nextJamo = targetJamo[inputJamo.length]
+  if (!nextJamo) return []
+
+  if (nextJamo === ' ') return [' ']
+
+  const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
   if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
-  if (HANGUL_KEY_MAP[char]) return [HANGUL_KEY_MAP[char]]
 
-// Shift가 필요한 자모 집합 (두벌식 기준)
-const SHIFT_JAMO = new Set(['ㅃ', 'ㅉ', 'ㄸ', 'ㄲ', 'ㅆ', 'ㅒ', 'ㅖ'])
-
-function getFirstKeys(char: string): string[] {
-  if (char === ' ') return [' ']
-  if (HANGUL_KEY_MAP[char]) {
-    const key = HANGUL_KEY_MAP[char]
-    return SHIFT_JAMO.has(char) ? ['shift-l', 'shift-r', key] : [key]
-  }
- dev
-
-  const code = char.charCodeAt(0)
-  if (code >= 0xac00 && code <= 0xd7a3) {
-    const firstJamo = disassembleToGroups(char)[0]?.[0]
-    if (firstJamo) {
- claude/typing-learning-service-design-2F4a1
-      const shiftFirst = SHIFT_JAMO_MAP[firstJamo]
-      if (shiftFirst) return [shiftFirst.shift, shiftFirst.key]
-      const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
-      return [key]
-
-      const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
-      return SHIFT_JAMO.has(firstJamo) ? ['shift-l', 'shift-r', key] : [key]
- dev
-    }
-  }
-
-  return [char.toLowerCase()]
-}
-
-// 조합 중인 자모 위치를 추적해 다음에 눌러야 할 키 목록 반환
-// 쌍자음/쌍모음이면 ['shift-l', 'shift-r', 'q'] 형태로 Shift 포함
-function getNextKeys(targetChar: string, composingChar: string): string[] {
-  if (!targetChar) return []
-  if (!composingChar) return getFirstKeys(targetChar)
-
-  const targetCode = targetChar.charCodeAt(0)
-  if (targetCode >= 0xac00 && targetCode <= 0xd7a3) {
-    const targetJamos = disassembleToGroups(targetChar)[0] ?? []
-    const composingJamos = disassembleToGroups(composingChar)[0] ?? []
-    // 현재 글자의 자모를 모두 입력한 상태 → 키보드 안내 없음 (확정 대기)
-    if (composingJamos.length >= targetJamos.length) return []
-    const nextJamo = targetJamos[composingJamos.length]
-    if (nextJamo) {
- claude/typing-learning-service-design-2F4a1
-      const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
-      if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
-      const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
-      return [key]
-
-      const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
-      return SHIFT_JAMO.has(nextJamo) ? ['shift-l', 'shift-r', key] : [key]
- dev
-    }
-  }
-
-  return getFirstKeys(targetChar)
+  const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
+  return [key]
 }
 
 function parseTextWithQuiz(text: string): Array<{ type: 'text' | 'quiz'; content: string; key?: string }> {
@@ -133,13 +88,14 @@ export default function TypingArea({
 }: TypingAreaProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const isComposingRef = useRef(false)
-  // 조합 시작 시점의 확정 입력값 — stale closure 없이 composingChar 범위 계산
   const compositionBaseRef = useRef('')
+  // 백스페이스 입력 시에만 DOM 동기화 허용
+  // compositionEnd 후 무분별한 inputRef.value 덮어쓰기를 막아 IME 상태 보호
+  const needsDomSyncRef = useRef(false)
   const store = useTypingStore()
   const { inputHandlers, state } = useTypingEngine()
   const [resolvedQuizzes, setResolvedQuizzes] = useState<Record<string, string>>({})
   const [pendingQuizKey, setPendingQuizKey] = useState<string | null>(null)
-  // IME 조합 중인 글자 (확정 전) — 타겟 위치에 직접 표시
   const [composingChar, setComposingChar] = useState('')
 
   const getResolvedText = () => {
@@ -159,10 +115,11 @@ export default function TypingArea({
     inputRef.current?.focus()
   }, [typingData.id])
 
-  // 백스페이스 후 DOM과 동기화
+  // 백스페이스 후에만 DOM 동기화 — compositionEnd 후 초기화는 IME 상태를 교란하므로 제거
   useEffect(() => {
-    if (!store.isComposing && inputRef.current) {
+    if (needsDomSyncRef.current && inputRef.current) {
       inputRef.current.value = state.userInput
+      needsDomSyncRef.current = false
     }
   }, [state.userInput])
 
@@ -198,22 +155,26 @@ export default function TypingArea({
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  // compositionStart: ref 동기화 후 엔진 핸들러 호출
-  // useTypingStore.getState()로 최신 userInput을 직접 읽어 stale closure 회피
+  // Backspace: DOM 동기화 플래그 설정 후 엔진 핸들러 위임
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      needsDomSyncRef.current = true
+    }
+    inputHandlers.onKeyDown(e)
+  }, [inputHandlers])
+
   const handleCompositionStart = useCallback(() => {
     compositionBaseRef.current = useTypingStore.getState().userInput
     isComposingRef.current = true
     inputHandlers.onCompositionStart()
   }, [inputHandlers])
 
-  // compositionEnd: ref 먼저 false로 설정 → onChange가 handleInput 처리
   const handleCompositionEnd = useCallback((e: React.CompositionEvent<HTMLInputElement>) => {
     isComposingRef.current = false
     setComposingChar('')
     inputHandlers.onCompositionEnd(e)
   }, [inputHandlers])
 
-  // onChange: compositionBaseRef 기준으로 composingChar 추출 (stale closure 방지)
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComposingRef.current) {
       setComposingChar(e.target.value.slice(compositionBaseRef.current.length))
@@ -224,7 +185,9 @@ export default function TypingArea({
   }, [inputHandlers])
 
   const currentText = store.currentText
-  const nextKeys = getNextKeys(currentText[state.userInput.length], composingChar)
+  // confirmed + composing 전체를 inputValue로 합산 → disassemble 기반 자모 인덱스 계산
+  const inputValue = state.userInput + composingChar
+  const nextKeys = getNextKeys(currentText, inputValue)
 
   const showStats = store.startTime !== null
 
@@ -269,6 +232,7 @@ export default function TypingArea({
         aria-hidden="true"
         readOnly={pendingQuizKey !== null}
         {...inputHandlers}
+        onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         onChange={handleChange}
@@ -292,11 +256,7 @@ export default function TypingArea({
         화면을 클릭하면 타이핑을 시작할 수 있어요
       </p>
 
- claude/typing-learning-service-design-2F4a1
       <VirtualKeyboard nextKeys={nextKeys} />
-
-      <VirtualKeyboard targetKeys={targetKeys} nextKeys={nextKeys} />
- dev
     </div>
   )
 }
