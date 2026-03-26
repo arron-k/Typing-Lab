@@ -44,8 +44,10 @@ export function useTypingEngine() {
         return
       }
 
-      // 백스페이스: 한글 오토마타 분해 처리
-      if (e.key === 'Backspace') {
+      // 백스페이스: IME 조합 중에는 브라우저/IME에 위임
+      // 조합 중 e.preventDefault()를 하면 브라우저가 composition 내부 backspace를
+      // 처리하지 못하고, store.handleBackspace()가 확정 텍스트를 잘못 지운다
+      if (e.key === 'Backspace' && !isComposingRef.current) {
         e.preventDefault()
         store.handleBackspace()
       }

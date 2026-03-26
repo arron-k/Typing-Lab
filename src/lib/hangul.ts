@@ -12,33 +12,22 @@ import { disassembleToGroups, assemble } from 'es-hangul'
 
 /**
  * 마지막 자모 하나를 제거한 문자열 반환
- * 한글 자모 분해 → 마지막 자모 제거 → 재조합
+ * 마지막 음절만 disassembleToGroups로 분해해 자모 하나를 제거 후 재조합
+ * 앞 글자들의 음절 경계는 그대로 유지 ("나라" → "나ㄹ", "봐" → "보")
  */
 export function deleteLastJamo(text: string): string {
   if (text.length === 0) return ''
 
-  // 마지막 문자 이전은 그대로 유지
   const prefix = text.slice(0, -1)
   const lastChar = text[text.length - 1]
 
-  // 마지막 글자의 자모 그룹 분해
-  // disassembleToGroups: "봐" → [["ㅂ", "ㅗ", "ㅏ"]]
   const groups = disassembleToGroups(lastChar)
-
   if (groups.length === 0) return prefix
 
   const lastGroup = groups[groups.length - 1]
+  if (lastGroup.length <= 1) return prefix
 
-  if (lastGroup.length <= 1) {
-    // 자모가 1개 이하면 글자 전체 제거
-    return prefix
-  }
-
-  // 자모 하나 제거 후 재조합
-  const trimmedGroup = lastGroup.slice(0, -1)
-  const reassembled = assemble(trimmedGroup)
-
-  return prefix + reassembled
+  return prefix + assemble(lastGroup.slice(0, -1))
 }
 
 /**

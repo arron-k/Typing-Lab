@@ -126,7 +126,7 @@ describe('onChange 조합 중 차단', () => {
 // onKeyDown — Backspace
 // ─────────────────────────────────────────────
 describe('onKeyDown Backspace', () => {
-  test('Backspace 키 → handleBackspace 호출 + preventDefault', () => {
+  test('비조합 Backspace → handleBackspace 호출 + preventDefault', () => {
     const { result } = renderHook(() => useTypingEngine())
     const preventDefault = jest.fn()
 
@@ -142,6 +142,30 @@ describe('onKeyDown Backspace', () => {
 
     expect(preventDefault).toHaveBeenCalled()
     expect(useTypingStore.getState().userInput).toBe('가ㄴ')
+  })
+
+  test('조합 중 Backspace → handleBackspace 호출하지 않고 브라우저에 위임', () => {
+    const { result } = renderHook(() => useTypingEngine())
+    const preventDefault = jest.fn()
+
+    act(() => {
+      useTypingStore.getState().handleInput('가')
+    })
+    // 조합 시작 (예: "나" 입력 중 ㄴ 단계)
+    act(() => {
+      result.current.inputHandlers.onCompositionStart()
+    })
+    act(() => {
+      result.current.inputHandlers.onKeyDown({
+        key: 'Backspace',
+        preventDefault,
+      } as unknown as React.KeyboardEvent<HTMLInputElement>)
+    })
+
+    // 조합 중에는 preventDefault를 호출하지 않고 브라우저/IME에 위임
+    expect(preventDefault).not.toHaveBeenCalled()
+    // 확정 텍스트는 변하지 않아야 함
+    expect(useTypingStore.getState().userInput).toBe('가')
   })
 
   test('조합 중 Enter → preventDefault', () => {

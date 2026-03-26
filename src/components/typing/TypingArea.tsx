@@ -155,9 +155,10 @@ export default function TypingArea({
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 
-  // Backspace: DOM 동기화 플래그 설정 후 엔진 핸들러 위임
+  // Backspace: 조합 중이 아닐 때만 DOM 동기화 플래그 설정
+  // 조합 중에는 브라우저/IME가 backspace를 처리하므로 DOM 강제 동기화 불필요
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace') {
+    if (e.key === 'Backspace' && !isComposingRef.current) {
       needsDomSyncRef.current = true
     }
     inputHandlers.onKeyDown(e)
