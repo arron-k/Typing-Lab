@@ -17,7 +17,7 @@ export const KEYBOARD_ROWS: KeyInfo[][] = [
     { key: '0',  label: '0',  finger: 'right-pinky' },
     { key: '-',  label: '-',  finger: 'right-pinky' },
     { key: '=',  label: '=',  finger: 'right-pinky' },
-    { key: 'backspace', label: '←', width: 1.5, finger: 'right-pinky' },
+    { key: 'backspace', label: '←', width: 2.0, finger: 'right-pinky' },
   ],
   // QWERTY 행 (두벌식: ㅂㅈㄷㄱㅅ / ㅛㅕㅑㅐㅔ)
   [
@@ -67,14 +67,16 @@ export const KEYBOARD_ROWS: KeyInfo[][] = [
     { key: '/', label: '/', finger: 'right-pinky' },
     { key: 'shift-r', label: 'Shift', width: 2.75, finger: 'right-pinky' },
   ],
-  // 스페이스 행
+  // 스페이스 행 (한국어 키보드 표준 — 합계 15.0u)
   [
-    { key: 'ctrl-l', label: 'Ctrl', width: 1.25, finger: 'left-pinky' },
-    { key: 'win',    label: '⊞',   width: 1.25, finger: 'left-thumb' },
-    { key: 'alt-l',  label: 'Alt',  width: 1.25, finger: 'left-thumb' },
-    { key: ' ',      label: '',     width: 5.5,  finger: 'left-thumb' },
-    { key: 'alt-r',  label: 'Alt',  width: 1.25, finger: 'right-thumb' },
-    { key: 'ctrl-r', label: 'Ctrl', width: 1.25, finger: 'right-pinky' },
+    { key: 'ctrl-l',  label: 'Ctrl', width: 1.5,  finger: 'left-pinky' },
+    { key: 'win',     label: '⊞',   width: 1.0,  finger: 'left-thumb' },
+    { key: 'alt-l',   label: 'Alt',  width: 1.0,  finger: 'left-thumb' },
+    { key: 'hanja',   label: '한자', width: 1.0,  finger: 'left-thumb' },
+    { key: ' ',       label: '',     width: 6.25, finger: 'left-thumb' },
+    { key: 'haneng',  label: '한/영', width: 1.0, finger: 'right-thumb' },
+    { key: 'alt-r',   label: 'Alt',  width: 1.0,  finger: 'right-thumb' },
+    { key: 'ctrl-r',  label: 'Ctrl', width: 2.25, finger: 'right-pinky' },
   ],
 ]
 
