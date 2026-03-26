@@ -56,6 +56,20 @@ describe('handleInput', () => {
     expect(useTypingStore.getState().mistakes).toBe(0)
   })
 
+  test('연속 handleInput 호출 시 오타를 이중 집계하지 않는다', () => {
+    // handleInput은 누적값으로 호출되므로, 이전에 이미 감지된 오타를 재집계하면 안 됨
+    act(() => {
+      useTypingStore.getState().initSession('가나다라', 1, 101)
+      useTypingStore.getState().handleInput('가나라') // '다' 자리에 '라' → 오타 1회
+    })
+    expect(useTypingStore.getState().mistakes).toBe(1)
+    act(() => {
+      useTypingStore.getState().handleInput('가나라마') // 새 글자 '마' 추가 (또 오타)
+    })
+    // 새 글자 '마'도 오타이므로 총 2회 (이전 '라' 위치 오타를 재집계하면 안 됨)
+    expect(useTypingStore.getState().mistakes).toBe(2)
+  })
+
   test('isCompleted: 전체 텍스트 입력 시 완료된다', () => {
     act(() => {
       useTypingStore.getState().handleInput('가나다라')

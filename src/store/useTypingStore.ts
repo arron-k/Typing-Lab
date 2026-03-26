@@ -93,14 +93,15 @@ export const useTypingStore = create<TypingState>((set, get) => ({
     const newCursorIndex = value.length
     let newMistakes = mistakes
 
-    // 자모 단위 오타 판정 — 받침 임시 결합 오판 방지
-    // 음절 비교("박" vs "바")는 받침이 임시로 붙은 진행 중인 입력을 오타로 처리하므로,
-    // disassemble로 flat 자모 배열을 만들어 1:1 비교한다.
-    // 예) "박"=['ㅂ','ㅏ','ㄱ'] vs "바구니"=['ㅂ','ㅏ','ㄱ','ㅜ','ㄴ','ㅣ'] → 접두 일치 → 오타 아님
+    // 자모 단위 오타 판정 — 새로 추가된 자모만 검사해 이중 집계 방지
+    // handleInput은 누적 전체값으로 호출되므로, 이전 userInput의 자모 수 이후만 비교
+    // 예) userInput="가나", 새 value="가나라" → 새 자모 ["ㄹ","ㅏ"]만 검사
     if (value.length > 0) {
       const targetJamo = Array.from(disassemble(currentText))
       const inputJamo = Array.from(disassemble(value))
-      const hasMismatch = inputJamo.some((j, i) => j !== targetJamo[i])
+      const prevJamoCount = Array.from(disassemble(get().userInput)).length
+      const newJamo = inputJamo.slice(prevJamoCount)
+      const hasMismatch = newJamo.some((j, idx) => j !== targetJamo[prevJamoCount + idx])
       if (hasMismatch) {
         newMistakes = mistakes + 1
         set({ isShaking: true })
