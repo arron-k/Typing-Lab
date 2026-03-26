@@ -46,6 +46,16 @@ describe('handleInput', () => {
     expect(useTypingStore.getState().mistakes).toBe(1)
   })
 
+  test('받침 임시 결합 상태는 오타로 판정하지 않는다', () => {
+    // "바구니" 입력 중 'ㄱ'이 '바'의 임시 받침이 된 '박' 상태
+    // disassemble("박")=['ㅂ','ㅏ','ㄱ'] 이 disassemble("바구니") 의 앞 3자모와 일치 → 오타 아님
+    act(() => {
+      useTypingStore.getState().initSession('바구니', 1, 101)
+      useTypingStore.getState().handleInput('박')
+    })
+    expect(useTypingStore.getState().mistakes).toBe(0)
+  })
+
   test('isCompleted: 전체 텍스트 입력 시 완료된다', () => {
     act(() => {
       useTypingStore.getState().handleInput('가나다라')

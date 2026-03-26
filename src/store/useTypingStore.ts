@@ -4,6 +4,7 @@ import { create } from 'zustand'
 import type { QuizState, SessionResult } from '@/types'
 import { deleteLastJamo } from '@/lib/hangul'
 import { calcWPM, calcAccuracy, calcStars, calcExp } from '@/lib/scoring'
+import { disassemble } from 'es-hangul'
 
 interface TypingState {
   // 텍스트 상태
@@ -92,14 +93,17 @@ export const useTypingStore = create<TypingState>((set, get) => ({
     const newCursorIndex = value.length
     let newMistakes = mistakes
 
-    // 새로 입력된 마지막 글자가 오타인지 확인
-    if (value.length > 0 && value.length <= currentText.length) {
-      const lastInputChar = value[value.length - 1]
-      const targetChar = currentText[value.length - 1]
-      if (lastInputChar !== targetChar) {
+    // 자모 단위 오타 판정 — 받침 임시 결합 오판 방지
+    // 음절 비교("박" vs "바")는 받침이 임시로 붙은 진행 중인 입력을 오타로 처리하므로,
+    // disassemble로 flat 자모 배열을 만들어 1:1 비교한다.
+    // 예) "박"=['ㅂ','ㅏ','ㄱ'] vs "바구니"=['ㅂ','ㅏ','ㄱ','ㅜ','ㄴ','ㅣ'] → 접두 일치 → 오타 아님
+    if (value.length > 0) {
+      const targetJamo = Array.from(disassemble(currentText))
+      const inputJamo = Array.from(disassemble(value))
+      const hasMismatch = inputJamo.some((j, i) => j !== targetJamo[i])
+      if (hasMismatch) {
         newMistakes = mistakes + 1
         set({ isShaking: true })
-        // 300ms 후 shake 해제
         setTimeout(() => set({ isShaking: false }), 300)
       }
     }
