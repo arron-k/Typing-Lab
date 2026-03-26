@@ -1,6 +1,6 @@
 /**
  * TypingArea 유틸 함수 단위 테스트
- * getNextKeys / getFirstKeys 의 키보드 점등 로직을 검증
+ * getNextKeys 의 키보드 점등 로직을 검증
  *
  * 두벌식 기준 주요 매핑:
  *   ㅇ → d   ㄱ → r   ㅏ → k   ㅕ → u   ㅣ → l
@@ -9,7 +9,7 @@
 
 // TypingArea는 'use client' 컴포넌트이므로 순수 함수만 추출해 테스트
 // 실제 파일의 로직을 동일하게 인라인으로 재구현하여 검증
-import { disassembleToGroups } from 'es-hangul'
+import { disassemble } from 'es-hangul'
 
 // ── 테스트용 로직 인라인 ─────────────────────────────────────
 const HANGUL_KEY_MAP: Record<string, string> = {
@@ -24,9 +24,6 @@ const HANGUL_KEY_MAP: Record<string, string> = {
   ' ': ' ',
 }
 
-// 쌍자음/쌍모음 → { 기본키, 눌러야 할 Shift 방향 }
-// 한컴타자 방식: 타겟 키의 반대쪽 손 Shift를 사용
-// 왼손 키(q~t) → shift-r / 오른손 키(o, p) → shift-l
 const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r' }> = {
   'ㅃ': { key: 'q', shift: 'shift-r' },
   'ㅉ': { key: 'w', shift: 'shift-r' },
@@ -37,111 +34,77 @@ const SHIFT_JAMO_MAP: Record<string, { key: string; shift: 'shift-l' | 'shift-r'
   'ㅖ': { key: 'p', shift: 'shift-l' },
 }
 
-function getFirstKeys(char: string): string[] {
-  if (char === ' ') return [' ']
-  const shiftEntry = SHIFT_JAMO_MAP[char]
-  if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
-  if (HANGUL_KEY_MAP[char]) return [HANGUL_KEY_MAP[char]]
-  const code = char.charCodeAt(0)
-  if (code >= 0xac00 && code <= 0xd7a3) {
-    const firstJamo = disassembleToGroups(char)[0]?.[0]
-    if (firstJamo) {
-      const shiftFirst = SHIFT_JAMO_MAP[firstJamo]
-      if (shiftFirst) return [shiftFirst.shift, shiftFirst.key]
-      const key = HANGUL_KEY_MAP[firstJamo] ?? char.toLowerCase()
-      return [key]
-    }
-  }
-  return [char.toLowerCase()]
-}
+function getNextKeys(targetText: string, inputValue: string): string[] {
+  if (!targetText) return []
 
-function getNextKeys(targetChar: string, composingChar: string): string[] {
-  if (!targetChar) return []
-  if (!composingChar) return getFirstKeys(targetChar)
-  const targetCode = targetChar.charCodeAt(0)
-  if (targetCode >= 0xac00 && targetCode <= 0xd7a3) {
-    const targetJamos = disassembleToGroups(targetChar)[0] ?? []
-    const composingJamos = disassembleToGroups(composingChar)[0] ?? []
-    if (composingJamos.length >= targetJamos.length) return []
-    const nextJamo = targetJamos[composingJamos.length]
-    if (nextJamo) {
-      const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
-      if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
-      const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
-      return [key]
-    }
-  }
-  return getFirstKeys(targetChar)
+  const targetJamo = disassemble(targetText)
+  const inputJamo = disassemble(inputValue)
+
+  if (inputJamo.length >= targetJamo.length) return []
+
+  const nextJamo = targetJamo[inputJamo.length]
+  if (!nextJamo) return []
+
+  if (nextJamo === ' ') return [' ']
+
+  const shiftEntry = SHIFT_JAMO_MAP[nextJamo]
+  if (shiftEntry) return [shiftEntry.shift, shiftEntry.key]
+
+  const key = HANGUL_KEY_MAP[nextJamo] ?? nextJamo.toLowerCase()
+  return [key]
 }
 // ────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
-// getFirstKeys
-// ─────────────────────────────────────────────
-describe('getFirstKeys', () => {
-  test('완성형 한글: 여 → ㅇ (d키)', () => {
-    expect(getFirstKeys('여')).toEqual(['d'])
-  })
-
-  test('완성형 한글: 기 → ㄱ (r키)', () => {
-    expect(getFirstKeys('기')).toEqual(['r'])
-  })
-
-  test('완성형 한글: 나 → ㄴ (s키)', () => {
-    expect(getFirstKeys('나')).toEqual(['s'])
-  })
-
-  test('완성형 한글: 하 → ㅎ (g키)', () => {
-    expect(getFirstKeys('하')).toEqual(['g'])
-  })
-
-  test('공백 → 스페이스바', () => {
-    expect(getFirstKeys(' ')).toEqual([' '])
-  })
-
-  test('영문자 소문자: a → a', () => {
-    expect(getFirstKeys('a')).toEqual(['a'])
-  })
-
-  test('영문자 대문자: A → a (소문자화)', () => {
-    expect(getFirstKeys('A')).toEqual(['a'])
-  })
-
-  test('쌍자음 ㅃ → shift-r+q (왼손 키이므로 오른쪽 Shift)', () => {
-    expect(getFirstKeys('ㅃ')).toEqual(['shift-r', 'q'])
-  })
-
-  test('쌍자음 ㄲ → shift-r+r (왼손 키이므로 오른쪽 Shift)', () => {
-    expect(getFirstKeys('ㄲ')).toEqual(['shift-r', 'r'])
-  })
-
-  test('쌍모음 ㅖ → shift-l+p (오른손 키이므로 왼쪽 Shift)', () => {
-    expect(getFirstKeys('ㅖ')).toEqual(['shift-l', 'p'])
-  })
-
-  test('쌍모음 ㅒ → shift-l+o (오른손 키이므로 왼쪽 Shift)', () => {
-    expect(getFirstKeys('ㅒ')).toEqual(['shift-l', 'o'])
-  })
-})
-
-// ─────────────────────────────────────────────
-// getNextKeys — composingChar 없음 (첫 자모)
+// getNextKeys — composing 없음 (첫 자모 안내)
 // ─────────────────────────────────────────────
 describe('getNextKeys — 조합 없음 (첫 자모 안내)', () => {
   test('빈 타겟 → 빈 배열', () => {
     expect(getNextKeys('', '')).toEqual([])
   })
 
-  test('여: composing 없음 → ㅇ (d키)', () => {
+  test('여: input 없음 → ㅇ (d키)', () => {
     expect(getNextKeys('여', '')).toEqual(['d'])
   })
 
-  test('기: composing 없음 → ㄱ (r키)', () => {
+  test('기: input 없음 → ㄱ (r키)', () => {
     expect(getNextKeys('기', '')).toEqual(['r'])
   })
 
-  test('쌍자음 시작 글자: composing 없음 → shift-r 포함', () => {
+  test('나: input 없음 → ㄴ (s키)', () => {
+    expect(getNextKeys('나', '')).toEqual(['s'])
+  })
+
+  test('하: input 없음 → ㅎ (g키)', () => {
+    expect(getNextKeys('하', '')).toEqual(['g'])
+  })
+
+  test('공백 → 스페이스바', () => {
+    expect(getNextKeys(' ', '')).toEqual([' '])
+  })
+
+  test('영문자 소문자: a → a', () => {
+    expect(getNextKeys('a', '')).toEqual(['a'])
+  })
+
+  test('영문자 대문자: A → a (소문자화)', () => {
+    expect(getNextKeys('A', '')).toEqual(['a'])
+  })
+
+  test('쌍자음 ㅃ → shift-r+q (왼손 키이므로 오른쪽 Shift)', () => {
     expect(getNextKeys('ㅃ', '')).toEqual(['shift-r', 'q'])
+  })
+
+  test('쌍자음 ㄲ → shift-r+r (왼손 키이므로 오른쪽 Shift)', () => {
+    expect(getNextKeys('ㄲ', '')).toEqual(['shift-r', 'r'])
+  })
+
+  test('쌍모음 ㅖ → shift-l+p (오른손 키이므로 왼쪽 Shift)', () => {
+    expect(getNextKeys('ㅖ', '')).toEqual(['shift-l', 'p'])
+  })
+
+  test('쌍모음 ㅒ → shift-l+o (오른손 키이므로 왼쪽 Shift)', () => {
+    expect(getNextKeys('ㅒ', '')).toEqual(['shift-l', 'o'])
   })
 })
 
@@ -171,10 +134,35 @@ describe('getNextKeys — 자모 조합 진행 중', () => {
 })
 
 // ─────────────────────────────────────────────
-// getNextKeys — 핵심 버그 케이스: 글자 완성 후 잘못된 키 안내
+// getNextKeys — 음절 경계 (바다 버그 핵심)
 // ─────────────────────────────────────────────
-describe('getNextKeys — 글자 완성 후 [] 반환 (핵심 버그 수정 검증)', () => {
-  test('여 완성(ㅇ+ㅕ) 후 → [] (ㅇ 다시 안내하면 안 됨)', () => {
+describe('getNextKeys — 음절 경계 (바다 버그 수정 검증)', () => {
+  test('바다: input="" → ㅂ (q키)', () => {
+    expect(getNextKeys('바다', '')).toEqual(['q'])
+  })
+
+  test('바다: input="ㅂ" → ㅏ (k키)', () => {
+    expect(getNextKeys('바다', 'ㅂ')).toEqual(['k'])
+  })
+
+  test('바다: input="바" (음절 완성) → ㄷ (e키) [핵심 버그 수정]', () => {
+    expect(getNextKeys('바다', '바')).toEqual(['e'])
+  })
+
+  test('바다: input="바ㄷ" → ㅏ (k키)', () => {
+    expect(getNextKeys('바다', '바ㄷ')).toEqual(['k'])
+  })
+
+  test('바다: input="바다" (완성) → []', () => {
+    expect(getNextKeys('바다', '바다')).toEqual([])
+  })
+})
+
+// ─────────────────────────────────────────────
+// getNextKeys — 글자 완성 후 [] 반환
+// ─────────────────────────────────────────────
+describe('getNextKeys — 글자 완성 후 [] 반환', () => {
+  test('여 완성(ㅇ+ㅕ) 후 → []', () => {
     expect(getNextKeys('여', '여')).toEqual([])
   })
 
@@ -186,11 +174,12 @@ describe('getNextKeys — 글자 완성 후 [] 반환 (핵심 버그 수정 검�
     expect(getNextKeys('한', '한')).toEqual([])
   })
 
-  test('하 조합 중(ㅎ+ㅏ)이고 타겟이 한(받침 있음) → ㄴ (s키) 안내', () => {
+  test('하 조합 중이고 타겟이 한(받침 있음) → ㄴ (s키) 안내', () => {
     expect(getNextKeys('한', '하')).toEqual(['s'])
   })
 
-  test('hasBatchimExtension: 어 타겟인데 composing이 엉 → [] (타겟 완성)', () => {
+  test('어 타겟인데 composing이 엉 → [] (타겟 완성)', () => {
+    // disassemble("엉")=["ㅇ","ㅓ","ㅇ"].length=3 >= disassemble("어")=["ㅇ","ㅓ"].length=2
     expect(getNextKeys('어', '엉')).toEqual([])
   })
 })
@@ -199,12 +188,12 @@ describe('getNextKeys — 글자 완성 후 [] 반환 (핵심 버그 수정 검�
 // getNextKeys — 영문/특수 케이스
 // ─────────────────────────────────────────────
 describe('getNextKeys — 영문 및 비한글', () => {
-  test('영문 타겟: composing 없음 → 소문자 키', () => {
+  test('영문 타겟: input 없음 → 소문자 키', () => {
     expect(getNextKeys('a', '')).toEqual(['a'])
   })
 
-  test('영문 타겟: composing 있어도 getFirstKeys로 처리', () => {
-    expect(getNextKeys('b', 'b')).toEqual(['b'])
+  test('영문 타겟: 완성 후 → []', () => {
+    expect(getNextKeys('b', 'b')).toEqual([])
   })
 
   test('공백 타겟 → 스페이스', () => {
