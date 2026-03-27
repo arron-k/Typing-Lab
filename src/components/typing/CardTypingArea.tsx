@@ -56,6 +56,8 @@ export default function CardTypingArea({
 }: CardTypingAreaProps) {
   const tokens = typingData.text.split(' ').filter(Boolean)
   const [tokenIndex, setTokenIndex] = useState(0)
+  // useEffect 비동기 지연 없이 이벤트 핸들러에서 즉시 참조하기 위한 ref
+  const tokenIndexRef = useRef(0)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const isComposingRef = useRef(false)
@@ -72,6 +74,7 @@ export default function CardTypingArea({
   // 세션 초기화 (첫 토큰)
   useEffect(() => {
     store.initSession(tokens[0], stageId, stepId)
+    tokenIndexRef.current = 0
     setTokenIndex(0)
     setComposingChar('')
     if (inputRef.current) inputRef.current.value = ''
@@ -86,20 +89,23 @@ export default function CardTypingArea({
     }
   }, [state.userInput])
 
-  // 토큰 완료 감지 → 다음 토큰으로 전환 또는 완료
-  useEffect(() => {
-    if (!state.isCompleted) return
-
-    if (tokenIndex >= tokens.length - 1) {
+  // 토큰 완료 시 동기적으로 다음 토큰으로 전환
+  // useEffect 대신 이벤트 핸들러에서 직접 호출해 DOM 초기화가 즉시 이루어지도록 함
+  // 이유: useEffect는 paint 이후 비동기 실행되므로, 빠른 타이핑 시
+  //       다음 토큰의 compositionStart가 DOM 초기화 전에 발생할 수 있음
+  //       → compositionBaseRef에 이전 토큰 텍스트가 남아 오타 오판정 발생
+  const advanceToken = useCallback(() => {
+    const nextIndex = tokenIndexRef.current + 1
+    if (nextIndex >= tokens.length) {
       onComplete()
     } else {
-      const nextIndex = tokenIndex + 1
+      tokenIndexRef.current = nextIndex
       setTokenIndex(nextIndex)
       store.initToken(tokens[nextIndex])
       setComposingChar('')
       if (inputRef.current) inputRef.current.value = ''
     }
-  }, [state.isCompleted])
+  }, [tokens, onComplete, store])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !isComposingRef.current) {
@@ -118,7 +124,11 @@ export default function CardTypingArea({
     isComposingRef.current = false
     setComposingChar('')
     inputHandlers.onCompositionEnd(e)
-  }, [inputHandlers])
+    // 토큰 완료 감지: compositionEnd 직후 동기적으로 확인
+    if (useTypingStore.getState().isCompleted) {
+      advanceToken()
+    }
+  }, [inputHandlers, advanceToken])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (isComposingRef.current) {
@@ -129,8 +139,12 @@ export default function CardTypingArea({
     } else {
       setComposingChar('')
       inputHandlers.onChange(e)
+      // 비조합 입력(영문 등)에서의 토큰 완료도 동기 처리
+      if (useTypingStore.getState().isCompleted) {
+        advanceToken()
+      }
     }
-  }, [inputHandlers])
+  }, [inputHandlers, advanceToken])
 
   const inputValue = state.userInput + composingChar
   const nextKeys = getNextKeys(currentToken, inputValue)
