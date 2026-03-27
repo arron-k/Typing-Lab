@@ -3,9 +3,15 @@
   "title": "자리 연습",
   "description": "키보드 홈 로우 자리를 익혀요",
   "starConditions": {
-    "one":   { "accuracy": 80 },
-    "two":   { "accuracy": 90 },
-    "three": { "mistakeCount": 0 }
+    "one": {
+      "accuracy": 80
+    },
+    "two": {
+      "accuracy": 90
+    },
+    "three": {
+      "mistakeCount": 0
+    }
   },
   "steps": [
     {
@@ -13,19 +19,25 @@
       "stageId": 1,
       "order": 1,
       "title": "오른손 홈 모음 — ㅏ ㅓ ㅣ",
-      "targetKeys": ["k", "j", "l"],
+      "targetKeys": [
+        "k",
+        "j",
+        "l"
+      ],
       "typingData": [
         {
           "id": "s1-t1-1",
           "type": "normal",
           "text": "아아아 어어어 이이이",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t1-2",
           "type": "normal",
           "text": "아이 이어 어아 아이어 이어아",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -34,19 +46,26 @@
       "stageId": 1,
       "order": 2,
       "title": "홈 모음 + ㅗ",
-      "targetKeys": ["k", "j", "l", "h"],
+      "targetKeys": [
+        "k",
+        "j",
+        "l",
+        "h"
+      ],
       "typingData": [
         {
           "id": "s1-t2-1",
           "type": "normal",
           "text": "오오오 아오 이오 오이 오아 이오이",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t2-2",
           "type": "normal",
           "text": "아오이 오이아 이오어 어오이",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -55,19 +74,24 @@
       "stageId": 1,
       "order": 3,
       "title": "왼손 홈 자음 ① — ㄴ ㄹ",
-      "targetKeys": ["s", "f"],
+      "targetKeys": [
+        "s",
+        "f"
+      ],
       "typingData": [
         {
           "id": "s1-t3-1",
           "type": "normal",
           "text": "나 나나 라 라라 나라 이라",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t3-2",
           "type": "normal",
           "text": "아라 나이 이나 라오 노 로",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -76,19 +100,24 @@
       "stageId": 1,
       "order": 4,
       "title": "왼손 홈 자음 ② — ㅁ ㅎ",
-      "targetKeys": ["a", "g"],
+      "targetKeys": [
+        "a",
+        "g"
+      ],
       "typingData": [
         {
           "id": "s1-t4-1",
           "type": "normal",
           "text": "마 마마 하 하하 이마 하마",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t4-2",
           "type": "normal",
           "text": "호이 모이 아마 이모 하나 나마",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -97,19 +126,23 @@
       "stageId": 1,
       "order": 5,
       "title": "왼손 홈 자음 ③ — ㅇ",
-      "targetKeys": ["d"],
+      "targetKeys": [
+        "d"
+      ],
       "typingData": [
         {
           "id": "s1-t5-1",
           "type": "normal",
           "text": "아이 오리 이리 오이 아오",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t5-2",
           "type": "normal",
           "text": "이마 이모 아마 오마 나라 이나",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -118,19 +151,25 @@
       "stageId": 1,
       "order": 6,
       "title": "받침 연습 — ㄹ ㅁ ㄴ",
-      "targetKeys": ["f", "a", "s"],
+      "targetKeys": [
+        "f",
+        "a",
+        "s"
+      ],
       "typingData": [
         {
           "id": "s1-t6-1",
           "type": "normal",
           "text": "말 날 알 올 일 홀 놀 할",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t6-2",
           "type": "normal",
           "text": "몸 남 임 암 함 람 림",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -139,19 +178,31 @@
       "stageId": 1,
       "order": 7,
       "title": "홈 로우 단어 모음",
-      "targetKeys": ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+      "targetKeys": [
+        "a",
+        "s",
+        "d",
+        "f",
+        "g",
+        "h",
+        "j",
+        "k",
+        "l"
+      ],
       "typingData": [
         {
           "id": "s1-t7-1",
           "type": "normal",
           "text": "나라 이마 하마 오리 이리 이모",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s1-t7-2",
           "type": "normal",
           "text": "로마 아이 모이 나이 말 날 일",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -160,7 +211,17 @@
       "stageId": 1,
       "order": 8,
       "title": "홈 로우 종합",
-      "targetKeys": ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+      "targetKeys": [
+        "a",
+        "s",
+        "d",
+        "f",
+        "g",
+        "h",
+        "j",
+        "k",
+        "l"
+      ],
       "typingData": [
         {
           "id": "s1-t8-1",

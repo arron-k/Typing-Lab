@@ -29,6 +29,7 @@ export type QuizOption = {
 export interface TypingData {
   id: string
   type: 'normal' | 'quiz'
+  displayMode?: 'linear' | 'card'
   text: string
   quizOptions?: Record<string, QuizOption> // key: 'quiz_1', 'quiz_2', ...
   theme: 'science' | 'grammar' | 'general'

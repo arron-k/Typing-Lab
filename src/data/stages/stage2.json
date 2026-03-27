@@ -3,9 +3,17 @@
   "title": "낱말 연습",
   "description": "과학과 국어 어휘를 타이핑해요",
   "starConditions": {
-    "one":   { "accuracy": 80, "mustComplete": true },
-    "two":   { "accuracy": 90 },
-    "three": { "accuracy": 95, "wpm": 100 }
+    "one": {
+      "accuracy": 80,
+      "mustComplete": true
+    },
+    "two": {
+      "accuracy": 90
+    },
+    "three": {
+      "accuracy": 95,
+      "wpm": 100
+    }
   },
   "steps": [
     {
@@ -13,19 +21,25 @@
       "stageId": 2,
       "order": 1,
       "title": "윗줄 모음 — ㅕ ㅛ ㅑ",
-      "targetKeys": ["u", "y", "h"],
+      "targetKeys": [
+        "u",
+        "y",
+        "h"
+      ],
       "typingData": [
         {
           "id": "s2-t1-1",
           "type": "normal",
           "text": "여기 야구 여우 요리 야호",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s2-t1-2",
           "type": "normal",
           "text": "요가 여름 야외 여유 요일",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -34,19 +48,26 @@
       "stageId": 2,
       "order": 2,
       "title": "윗줄 자음 — ㅂ ㅈ ㄷ ㄱ",
-      "targetKeys": ["q", "w", "e", "r"],
+      "targetKeys": [
+        "q",
+        "w",
+        "e",
+        "r"
+      ],
       "typingData": [
         {
           "id": "s2-t2-1",
           "type": "normal",
           "text": "바다 자다 다가 가다 바구니",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         },
         {
           "id": "s2-t2-2",
           "type": "normal",
           "text": "지구 도기 가지 바지 도자기",
-          "theme": "general"
+          "theme": "general",
+          "displayMode": "card"
         }
       ]
     },
@@ -61,13 +82,15 @@
           "id": "s2-t3-1",
           "type": "normal",
           "text": "빛 열 힘 물 흙 공기 바람",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t3-2",
           "type": "normal",
           "text": "에너지 온도 압력 밀도 부피",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     },
@@ -82,13 +105,15 @@
           "id": "s2-t4-1",
           "type": "normal",
           "text": "뿌리 줄기 잎 꽃 열매 씨앗",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t4-2",
           "type": "normal",
           "text": "광합성 엽록체 증산 수분 영양",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     },
@@ -103,13 +128,15 @@
           "id": "s2-t5-1",
           "type": "normal",
           "text": "척추 포유류 파충류 양서류 곤충",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t5-2",
           "type": "normal",
           "text": "먹이사슬 천적 생태계 분해자 생산자",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     },
@@ -124,13 +151,15 @@
           "id": "s2-t6-1",
           "type": "normal",
           "text": "지구 달 태양 행성 별자리",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t6-2",
           "type": "normal",
           "text": "중력 대기 공전 자전 우주",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     },
@@ -145,13 +174,15 @@
           "id": "s2-t7-1",
           "type": "normal",
           "text": "소중히 알맞은 느끼다 표현하다",
-          "theme": "grammar"
+          "theme": "grammar",
+          "displayMode": "card"
         },
         {
           "id": "s2-t7-2",
           "type": "normal",
           "text": "생각하다 이해하다 비교하다 설명하다",
-          "theme": "grammar"
+          "theme": "grammar",
+          "displayMode": "card"
         }
       ]
     },
@@ -166,13 +197,15 @@
           "id": "s2-t8-1",
           "type": "normal",
           "text": "경험 상상 느낌 장면 인물 사건",
-          "theme": "grammar"
+          "theme": "grammar",
+          "displayMode": "card"
         },
         {
           "id": "s2-t8-2",
           "type": "normal",
           "text": "배경 주제 갈등 해결 감동 교훈",
-          "theme": "grammar"
+          "theme": "grammar",
+          "displayMode": "card"
         }
       ]
     },
@@ -187,13 +220,15 @@
           "id": "s2-t9-1",
           "type": "normal",
           "text": "발명 발견 실험 관찰 가설",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t9-2",
           "type": "normal",
           "text": "결과 증명 기록 분석 탐구",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     },
@@ -208,13 +243,15 @@
           "id": "s2-t10-1",
           "type": "normal",
           "text": "광합성 중력 포유류 발명 척추 대기",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         },
         {
           "id": "s2-t10-2",
           "type": "normal",
           "text": "생태계 공전 자전 엽록체 먹이사슬",
-          "theme": "science"
+          "theme": "science",
+          "displayMode": "card"
         }
       ]
     }

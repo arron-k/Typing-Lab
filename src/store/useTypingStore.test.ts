@@ -262,3 +262,73 @@ describe('WPM / 정확도', () => {
     expect(useTypingStore.getState().wpm).toBeGreaterThanOrEqual(0)
   })
 })
+
+// ─────────────────────────────────────────────
+// initToken (card 모드)
+// ─────────────────────────────────────────────
+describe('initToken', () => {
+  beforeEach(() => {
+    act(() => {
+      useTypingStore.getState().initSession('나라', 1, 101)
+    })
+  })
+
+  test('currentText가 새 토큰으로 바뀐다', () => {
+    act(() => {
+      useTypingStore.getState().handleInput('나라')
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().currentText).toBe('이마')
+  })
+
+  test('userInput과 cursorIndex가 초기화된다', () => {
+    act(() => {
+      useTypingStore.getState().handleInput('나')
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().userInput).toBe('')
+    expect(useTypingStore.getState().cursorIndex).toBe(0)
+  })
+
+  test('isCompleted가 false로 초기화된다', () => {
+    act(() => {
+      useTypingStore.getState().handleInput('나라')
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().isCompleted).toBe(false)
+  })
+
+  test('mistakes는 이전 토큰 값이 유지된다', () => {
+    act(() => {
+      useTypingStore.getState().handleInput('다') // '나' 자리에 '다' → 오타 1회
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().mistakes).toBe(1)
+  })
+
+  test('startTime은 이전 토큰 값이 유지된다', () => {
+    act(() => {
+      useTypingStore.getState().handleInput('나')
+    })
+    const startTime = useTypingStore.getState().startTime
+    act(() => {
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().startTime).toBe(startTime)
+  })
+
+  test('totalTypedChars에 이전 토큰 길이가 누적된다', () => {
+    act(() => {
+      useTypingStore.getState().initToken('이마')
+    })
+    expect(useTypingStore.getState().totalTypedChars).toBe(2) // '나라'.length
+  })
+
+  test('initSession은 totalTypedChars를 0으로 초기화한다', () => {
+    act(() => {
+      useTypingStore.getState().initToken('이마')
+      useTypingStore.getState().initSession('가나다라', 1, 101)
+    })
+    expect(useTypingStore.getState().totalTypedChars).toBe(0)
+  })
+})

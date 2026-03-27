@@ -13,6 +13,7 @@ interface TypingState {
   cursorIndex: number
   mistakes: number
   isComposing: boolean
+  totalTypedChars: number  // card 모드: 이전 토큰 완성 문자 수 누적
 
   // 타이밍
   startTime: number | null
@@ -34,6 +35,7 @@ interface TypingState {
 
   // 액션
   initSession: (text: string, stageId: number, stepId: number) => void
+  initToken: (text: string) => void
   handleInput: (value: string) => void
   handleCompositionStart: () => void
   handleCompositionEnd: (value: string) => void
@@ -50,6 +52,7 @@ const initialState = {
   cursorIndex: 0,
   mistakes: 0,
   isComposing: false,
+  totalTypedChars: 0,
   startTime: null,
   endTime: null,
   wpm: 0,
@@ -71,6 +74,19 @@ export const useTypingStore = create<TypingState>((set, get) => ({
       currentText: text,
       stageId,
       stepId,
+    })
+  },
+
+  initToken: (text: string) => {
+    const { currentText, totalTypedChars } = get()
+    set({
+      currentText: text,
+      userInput: '',
+      cursorIndex: 0,
+      isCompleted: false,
+      isShaking: false,
+      isComposing: false,
+      totalTypedChars: totalTypedChars + currentText.length,
     })
   },
 
@@ -161,6 +177,7 @@ export const useTypingStore = create<TypingState>((set, get) => ({
   finishSession: () => {
     const {
       currentText,
+      totalTypedChars,
       mistakes,
       startTime,
       endTime,
@@ -170,8 +187,9 @@ export const useTypingStore = create<TypingState>((set, get) => ({
     } = get()
 
     const duration = (endTime ?? Date.now()) - (startTime ?? Date.now())
-    const wpm = calcWPM(currentText.length, duration)
-    const accuracy = calcAccuracy(currentText.length, mistakes)
+    const totalChars = totalTypedChars > 0 ? totalTypedChars + currentText.length : currentText.length
+    const wpm = calcWPM(totalChars, duration)
+    const accuracy = calcAccuracy(totalChars, mistakes)
 
     const totalQuizzes = quizResults.length
     const correctQuizzes = quizResults.filter((q) => q.isCorrect).length
@@ -188,7 +206,7 @@ export const useTypingStore = create<TypingState>((set, get) => ({
     }
 
     const stars = calcStars(stageId, result)
-    const expGained = calcExp(currentText.length, accuracy, stageId, stars)
+    const expGained = calcExp(totalChars, accuracy, stageId, stars)
 
     const sessionResult: SessionResult = { ...result, stars, expGained }
 

@@ -8,6 +8,7 @@ import { useProgressStore } from '@/store/useProgressStore'
 import { useUserStore } from '@/store/useUserStore'
 import { getStep, getNextStep } from '@/lib/curriculum'
 import TypingArea from '@/components/typing/TypingArea'
+import CardTypingArea from '@/components/typing/CardTypingArea'
 import ResultModal from '@/components/typing/ResultModal'
 import LeoAvatar from '@/components/character/LeoAvatar'
 import type { StepData, SessionResult } from '@/types'
@@ -112,14 +113,23 @@ export default function StepPage() {
       {/* 타이핑 영역 */}
       <main className="max-w-3xl mx-auto px-4 py-6">
         {currentTypingData && (
-          <TypingArea
-            key={`${stepId}-${currentTypingIndex}`}
-            typingData={currentTypingData}
-            stageId={stageId}
-            stepId={stepId}
-            targetKeys={stepData.targetKeys}
-            onComplete={handleTypingComplete}
-          />
+          currentTypingData.displayMode === 'card'
+            ? <CardTypingArea
+                key={`${stepId}-${currentTypingIndex}`}
+                typingData={currentTypingData}
+                stageId={stageId}
+                stepId={stepId}
+                targetKeys={stepData.targetKeys}
+                onComplete={handleTypingComplete}
+              />
+            : <TypingArea
+                key={`${stepId}-${currentTypingIndex}`}
+                typingData={currentTypingData}
+                stageId={stageId}
+                stepId={stepId}
+                targetKeys={stepData.targetKeys}
+                onComplete={handleTypingComplete}
+              />
         )}
       </main>
 
