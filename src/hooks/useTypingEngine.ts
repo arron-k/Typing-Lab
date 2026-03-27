@@ -86,6 +86,7 @@ export function useTypingEngine() {
       accuracy:    store.accuracy,
       isCompleted: store.isCompleted,
       isShaking:   store.isShaking,
+      isComposing: store.isComposing,
     },
   }
 }
