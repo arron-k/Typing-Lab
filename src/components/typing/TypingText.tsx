@@ -7,9 +7,10 @@ interface TypingTextProps {
   confirmedInput: string
   composingChar: string
   isShaking: boolean
+  isComposing: boolean
 }
 
-export default function TypingText({ currentText, confirmedInput, composingChar, isShaking }: TypingTextProps) {
+export default function TypingText({ currentText, confirmedInput, composingChar, isShaking, isComposing }: TypingTextProps) {
   const cursorIndex = confirmedInput.length
 
   return (
@@ -30,20 +31,22 @@ export default function TypingText({ currentText, confirmedInput, composingChar,
             ? 'text-green-600'
             : 'text-red-500 bg-red-50 rounded'
         } else if (index === cursorIndex) {
-          if (composingChar) {
-            // IME 임시 받침 상태 감지: composingChar의 자모가 target 자모로 시작하고 더 긺
-            // 예) target="어"(ㅇ,ㅓ), composingChar="엉"(ㅇ,ㅓ,ㅇ) → target 표시
-            const targetJamos = disassembleToGroups(char)[0] ?? [char]
-            const composingJamos = disassembleToGroups(composingChar)[0] ?? [composingChar]
-            const isOnTrack = targetJamos.every((j, i) => composingJamos[i] === j)
-            const hasBatchimExtension = composingJamos.length > targetJamos.length
+          if (isComposing || composingChar) {
+            // 개선안 1: 조합 시작부터 커서 블링크 완전 억제 (isComposing 기준)
+            // 개선안 2: 항상 타겟 글자를 표시, underline 색으로만 진행 피드백
+            displayChar = char === ' ' ? '\u00A0' : char
 
-            if (isOnTrack && hasBatchimExtension) {
-              displayChar = char === ' ' ? '\u00A0' : char
+            if (composingChar) {
+              const targetJamos = disassembleToGroups(char)[0] ?? [char]
+              const composingJamos = disassembleToGroups(composingChar)[0] ?? [composingChar]
+              const isOnTrack = composingJamos.every((j, i) => j === targetJamos[i])
+              charClass = isOnTrack
+                ? 'text-blue-500 underline decoration-blue-400'
+                : 'text-red-400 underline decoration-red-400'
             } else {
-              displayChar = composingChar === ' ' ? '\u00A0' : composingChar
+              // compositionStart 직후 composingChar 미설정 구간: 중립 underline
+              charClass = 'text-gray-400 underline decoration-gray-300'
             }
-            charClass = 'text-blue-500 underline decoration-blue-400'
           } else {
             showCursor = true
             charClass = 'text-gray-300'

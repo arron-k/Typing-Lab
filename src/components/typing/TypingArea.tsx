@@ -256,6 +256,7 @@ export default function TypingArea({
           confirmedInput={state.userInput}
           composingChar={composingChar}
           isShaking={state.isShaking}
+          isComposing={state.isComposing}
         />
       )}
 
