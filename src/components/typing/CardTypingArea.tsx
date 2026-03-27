@@ -108,11 +108,19 @@ export default function CardTypingArea({
   }, [tokens, onComplete, store])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 카드 모드: 스페이스/엔터는 토큰 진행 키로 처리 — store에 전달하면 오타 판정됨
+    if ((e.key === ' ' || e.key === 'Enter') && !isComposingRef.current) {
+      e.preventDefault()
+      if (useTypingStore.getState().isCompleted) {
+        advanceToken()
+      }
+      return
+    }
     if (e.key === 'Backspace' && !isComposingRef.current) {
       needsDomSyncRef.current = true
     }
     inputHandlers.onKeyDown(e)
-  }, [inputHandlers])
+  }, [inputHandlers, advanceToken])
 
   const handleCompositionStart = useCallback(() => {
     compositionBaseRef.current = useTypingStore.getState().userInput
